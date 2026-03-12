@@ -1,0 +1,453 @@
+import React, { useState, useRef } from 'react';
+import { 
+  X, 
+  Upload, 
+  Globe, 
+  Plus, 
+  Trash2, 
+  Facebook, 
+  Linkedin, 
+  Instagram, 
+  Twitter, 
+  Link, 
+  Briefcase, 
+  IdCard, 
+  Palette, 
+  Phone,
+  Mail
+} from 'lucide-react';
+
+/**
+ * SHARED UI COMPONENTS
+ */
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+/**
+ * IMAGE CROPPER MODAL
+ * A lightweight canvas-based cropper for 1:1 and 3:1 aspect ratios.
+ */
+const ImageCropperModal = ({ isOpen, onClose, imageSrc, aspect, onCropComplete, title }) => {
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+  const imgRef = useRef(null);
+
+  if (!isOpen) return null;
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleSave = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = imgRef.current;
+    
+    const outputWidth = aspect === 1 ? 400 : 600;
+    const outputHeight = outputWidth / aspect;
+    
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const drawWidth = img.width * zoom * (outputWidth / rect.width);
+    const drawHeight = img.height * zoom * (outputHeight / rect.height);
+    const drawX = (offset.x + (rect.width/2) - (img.width * zoom / 2)) * (outputWidth / rect.width);
+    const drawY = (offset.y + (rect.height/2) - (img.height * zoom / 2)) * (outputHeight / rect.height);
+
+    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+    
+    onCropComplete(canvas.toDataURL('image/jpeg', 0.9));
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-xl overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="font-bold text-slate-800 dark:text-white">{title || 'Crop Image'}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={20}/></button>
+        </div>
+        
+        <div className="p-6 bg-slate-50 dark:bg-slate-900/50">
+          <div 
+            ref={containerRef}
+            className="relative overflow-hidden bg-slate-200 dark:bg-slate-800 mx-auto cursor-move border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg"
+            style={{ 
+              width: '100%', 
+              aspectRatio: `${aspect}/1`,
+              maxWidth: aspect === 1 ? '300px' : '100%'
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <img 
+              ref={imgRef}
+              src={imageSrc} 
+              alt="Crop target" 
+              className="absolute pointer-events-none max-w-none origin-center"
+              style={{ 
+                transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                top: '50%',
+                left: '50%',
+                marginTop: '-50%',
+                marginLeft: '-50%'
+              }}
+            />
+            <div className="absolute inset-0 pointer-events-none border border-indigo-500 shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"></div>
+          </div>
+          
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold text-slate-500 uppercase">Zoom</span>
+              <input 
+                type="range" min="0.5" max="3" step="0.1" value={zoom} 
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700 rounded-md">Cancel</button>
+          <button onClick={handleSave} className="px-6 py-2 text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 rounded-md shadow-sm">Save Crop</button>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+/**
+ * MAIN PROFILE COMPONENT
+ */
+const App = () => {
+  const [profile, setProfile] = useState({
+    firstName: 'Thomas',
+    lastName: 'Anree',
+    title: 'Senior UX Designer',
+    email: 'thomas.anree@example.com',
+    phone: '+1 (555) 123-4567',
+    licenseNumber: 'RE-987210-CA',
+    webAddress: 'www.anreedesign.com',
+    marketingDisclaimer: 'All information provided is deemed reliable but is not guaranteed and should be independently verified.',
+    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    companyLogo: null,
+    primaryColor: '#3C50E0',
+    secondaryColor: '#80CAEE',
+    socials: [
+      { platform: 'LinkedIn', url: 'https://linkedin.com/in/tanree' },
+      { platform: 'Twitter', url: 'https://twitter.com/tanree' }
+    ]
+  });
+
+  const [cropper, setCropper] = useState({ isOpen: false, src: null, aspect: 1, type: null });
+  const fileInputRef = useRef(null);
+  const logoInputRef = useRef(null);
+
+  const handleFileChange = (e, type) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setCropper({ 
+        isOpen: true, 
+        src: reader.result, 
+        aspect: type === 'photo' ? 1 : 3, 
+        type 
+      });
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addSocial = () => {
+    setProfile({ ...profile, socials: [...profile.socials, { platform: 'Facebook', url: '' }] });
+  };
+
+  const updateSocial = (index, field, value) => {
+    const newSocials = [...profile.socials];
+    newSocials[index][field] = value;
+    setProfile({ ...profile, socials: newSocials });
+  };
+
+  const removeSocial = (index) => {
+    setProfile({ ...profile, socials: profile.socials.filter((_, i) => i !== index) });
+  };
+
+  const getSocialIcon = (platform) => {
+    switch(platform) {
+      case 'Facebook': return <Facebook size={16} />;
+      case 'LinkedIn': return <Linkedin size={16} />;
+      case 'Instagram': return <Instagram size={16} />;
+      case 'Twitter': return <Twitter size={16} />;
+      default: return <Link size={16} />;
+    }
+  };
+
+  return (
+    <div className="p-4 md:p-8 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in duration-500">
+        
+        {/* 1. Integrated Personal Information & Photo */}
+        <Card className="p-7">
+          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-lg">
+              <IdCard size={20} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Personal Information</h3>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-10">
+            {/* Photo Column */}
+            <div className="flex flex-col items-center shrink-0">
+              <div className="relative group w-40 h-40 mb-4">
+                 <div className="w-full h-full rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-700">
+                   <img src={profile.photo} alt="Profile" className="w-full h-full object-cover" />
+                 </div>
+                 <button 
+                  onClick={() => fileInputRef.current.click()}
+                  className="absolute -bottom-2 -right-2 p-2.5 bg-indigo-500 text-white rounded-full shadow-lg hover:bg-indigo-600 transition-transform hover:scale-110 active:scale-95"
+                 >
+                   <Upload size={18} />
+                 </button>
+                 <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={e => handleFileChange(e, 'photo')} />
+              </div>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">Profile Photo</p>
+            </div>
+
+            {/* Form Fields Column */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">First Name</label>
+                <input 
+                  type="text" value={profile.firstName} 
+                  onChange={e => setProfile({...profile, firstName: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Last Name</label>
+                <input 
+                  type="text" value={profile.lastName} 
+                  onChange={e => setProfile({...profile, lastName: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Professional Title</label>
+                <input 
+                  type="text" value={profile.title} 
+                  onChange={e => setProfile({...profile, title: e.target.value})}
+                  placeholder="e.g. Principal Broker, Senior Agent"
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="email" value={profile.email} 
+                    onChange={e => setProfile({...profile, email: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" value={profile.phone} 
+                    onChange={e => setProfile({...profile, phone: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">License Number</label>
+                <input 
+                  type="text" value={profile.licenseNumber} 
+                  onChange={e => setProfile({...profile, licenseNumber: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Web Address</label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" value={profile.webAddress} 
+                    onChange={e => setProfile({...profile, webAddress: e.target.value})}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" 
+                  />
+                </div>
+              </div>
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Marketing Disclaimer</label>
+                <textarea 
+                  rows="3" value={profile.marketingDisclaimer}
+                  onChange={e => setProfile({...profile, marketingDisclaimer: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* 2. Social Media Links Section */}
+        <Card className="p-7">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-lg">
+                <Link size={20} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Social Media Profiles</h3>
+            </div>
+            <button 
+              onClick={addSocial}
+              className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded hover:bg-indigo-100 transition-colors"
+            >
+              <Plus size={14} /> Add Platform
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {profile.socials.map((social, index) => (
+              <div key={index} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3 animate-in slide-in-from-top-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
+                    {getSocialIcon(social.platform)}
+                    <select 
+                      value={social.platform}
+                      onChange={e => updateSocial(index, 'platform', e.target.value)}
+                      className="text-xs font-bold bg-transparent outline-none cursor-pointer"
+                    >
+                      <option>LinkedIn</option>
+                      <option>Twitter</option>
+                      <option>Facebook</option>
+                      <option>Instagram</option>
+                    </select>
+                  </div>
+                  <button onClick={() => removeSocial(index)} className="ml-auto text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                </div>
+                <input 
+                  type="text" placeholder="https://..." value={social.url}
+                  onChange={e => updateSocial(index, 'url', e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500/20 outline-none" 
+                />
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* 3. Company Branding Section */}
+        <Card className="p-7">
+          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 rounded-lg">
+              <Briefcase size={20} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Company Branding</h3>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="lg:col-span-7 space-y-4">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Company Logo (Horizontal 3:1)</label>
+              <div 
+                onClick={() => logoInputRef.current.click()}
+                className="group relative h-40 w-full border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/10 transition-all overflow-hidden"
+              >
+                {profile.companyLogo ? (
+                  <img src={profile.companyLogo} alt="Logo" className="w-full h-full object-contain p-6" />
+                ) : (
+                  <>
+                    <Upload className="text-slate-400 group-hover:text-indigo-500 mb-2" size={32} />
+                    <span className="text-xs font-bold text-slate-500">Drop company logo here</span>
+                  </>
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <span className="text-white text-xs font-bold px-4 py-2 bg-indigo-500 rounded-lg">Change Logo</span>
+                </div>
+              </div>
+              <input ref={logoInputRef} type="file" className="hidden" accept="image/*" onChange={e => handleFileChange(e, 'logo')} />
+            </div>
+
+            <div className="lg:col-span-5 flex flex-col justify-center gap-6">
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <Palette size={14} /> Brand Color Scheme
+                </label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <div className="w-12 h-12 rounded-lg shadow-inner shrink-0 border border-white dark:border-slate-700" style={{ backgroundColor: profile.primaryColor }}></div>
+                    <div className="flex-1 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Primary Hex</span>
+                      <input 
+                        type="text" value={profile.primaryColor}
+                        onChange={e => setProfile({...profile, primaryColor: e.target.value})}
+                        className="w-full px-2 py-1 bg-transparent border-b border-slate-200 dark:border-slate-700 font-mono text-sm outline-none" 
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <div className="w-12 h-12 rounded-lg shadow-inner shrink-0 border border-white dark:border-slate-700" style={{ backgroundColor: profile.secondaryColor }}></div>
+                    <div className="flex-1 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Secondary Hex</span>
+                      <input 
+                        type="text" value={profile.secondaryColor}
+                        onChange={e => setProfile({...profile, secondaryColor: e.target.value})}
+                        className="w-full px-2 py-1 bg-transparent border-b border-slate-200 dark:border-slate-700 font-mono text-sm outline-none" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex justify-end pt-4">
+          <button className="px-10 py-4 bg-indigo-500 text-white font-black rounded-lg shadow-xl shadow-indigo-500/20 hover:bg-indigo-600 transition-all hover:-translate-y-1 active:translate-y-0">
+            SAVE ACCOUNT SETTINGS
+          </button>
+        </div>
+
+        {/* CROPPER OVERLAY */}
+        <ImageCropperModal 
+          isOpen={cropper.isOpen}
+          onClose={() => setCropper({ ...cropper, isOpen: false })}
+          imageSrc={cropper.src}
+          aspect={cropper.aspect}
+          title={cropper.type === 'photo' ? 'Perfect Your Profile Photo' : 'Brand Your Company Logo'}
+          onCropComplete={(croppedData) => {
+            if (cropper.type === 'photo') setProfile({ ...profile, photo: croppedData });
+            else setProfile({ ...profile, companyLogo: croppedData });
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default App;
