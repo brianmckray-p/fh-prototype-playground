@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Alert,
+  Avatar,
   Button,
   Card,
   Checkbox,
+  ColorPicker,
   ConfigProvider,
   Divider,
   Flex,
@@ -13,8 +15,11 @@ import {
   Input,
   Layout,
   Menu,
+  message,
   Modal,
   Progress,
+  Select,
+  Slider,
   Tag,
   Typography,
 } from "antd";
@@ -23,15 +28,24 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   BankOutlined,
+  BgColorsOutlined,
   BookOutlined,
   CaretDownOutlined,
   CheckCircleFilled,
+  DeleteOutlined,
+  FacebookOutlined,
+  FileTextOutlined,
   FolderOutlined,
   GlobalOutlined,
   HomeOutlined,
+  IdcardOutlined,
+  InstagramOutlined,
   LeftOutlined,
+  LinkOutlined,
+  LinkedinOutlined,
   LockOutlined,
   MailOutlined,
+  PhoneOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SafetyCertificateOutlined,
@@ -39,11 +53,14 @@ import {
   SolutionOutlined,
   StarOutlined,
   TeamOutlined,
+  TwitterOutlined,
+  UploadOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Header, Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 // ─────────────────────────────────────────────────────────────
 // Shared tokens — match portal-opportunities & profile-management
@@ -82,29 +99,364 @@ interface CompletedTasks {
   pipeline: boolean;
 }
 
+interface Social {
+  platform: string;
+  url: string;
+}
+
+interface Profile {
+  firstName: string;
+  lastName: string;
+  title: string;
+  email: string;
+  phone: string;
+  licenseNumber: string;
+  webAddress: string;
+  marketingDisclaimer: string;
+  photo: string;
+  companyLogo: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  socials: Social[];
+}
+
+interface CropperState {
+  isOpen: boolean;
+  src: string | null;
+  aspect: number;
+  type: "photo" | "logo" | null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Account Settings helpers
+// ─────────────────────────────────────────────────────────────
+function SectionHeader({ icon, title, extra, accentColor = "#1677ff", accentBg = "rgba(22,119,255,0.06)" }: {
+  icon: React.ReactNode; title: string; extra?: React.ReactNode;
+  accentColor?: string; accentBg?: string;
+}) {
+  return (
+    <Flex justify="space-between" align="center"
+      style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid #f0f0f0" }}>
+      <Flex align="center" gap={12}>
+        <div style={{ padding: 8, borderRadius: 8, backgroundColor: accentBg, color: accentColor, display: "flex", alignItems: "center" }}>
+          {icon}
+        </div>
+        <Title level={5} style={{ margin: 0 }}>{title}</Title>
+      </Flex>
+      {extra}
+    </Flex>
+  );
+}
+
+function SocialIcon({ platform }: { platform: string }) {
+  switch (platform) {
+    case "Facebook": return <FacebookOutlined />;
+    case "LinkedIn": return <LinkedinOutlined />;
+    case "Instagram": return <InstagramOutlined />;
+    case "Twitter": return <TwitterOutlined />;
+    default: return <LinkOutlined />;
+  }
+}
+
+function ImageCropperModal({
+  isOpen, onClose, imageSrc, aspect, title, onCropComplete,
+}: {
+  isOpen: boolean; onClose: () => void; imageSrc: string | null;
+  aspect: number; title: string; onCropComplete: (dataUrl: string) => void;
+}) {
+  const [zoom, setZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imageSrc) { setZoom(1); setCropOffset({ x: 0, y: 0 }); }
+  }, [imageSrc]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - cropOffset.x, y: e.clientY - cropOffset.y });
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setCropOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleSave = () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = imgRef.current;
+    const container = containerRef.current;
+    if (!ctx || !img || !container) return;
+    const outputWidth = aspect === 1 ? 400 : 600;
+    const outputHeight = outputWidth / aspect;
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+    const cW = container.clientWidth;
+    const cH = container.clientHeight;
+    const iW = img.naturalWidth;
+    const iH = img.naturalHeight;
+    const scaleX = outputWidth / cW;
+    const scaleY = outputHeight / cH;
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, outputWidth, outputHeight);
+    const drawX = (cW / 2 + cropOffset.x - (iW * zoom) / 2) * scaleX;
+    const drawY = (cH / 2 + cropOffset.y - (iH * zoom) / 2) * scaleY;
+    ctx.drawImage(img, drawX, drawY, iW * zoom * scaleX, iH * zoom * scaleY);
+    onCropComplete(canvas.toDataURL("image/jpeg", 0.9));
+    onClose();
+  };
+
+  return (
+    <Modal open={isOpen} onCancel={onClose} title={title} width={560}
+      footer={[
+        <Button key="cancel" onClick={onClose}>Cancel</Button>,
+        <Button key="save" type="primary" onClick={handleSave}>Save Crop</Button>,
+      ]}
+    >
+      {imageSrc && (
+        <div style={{ padding: "16px 0" }}>
+          <div ref={containerRef}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              position: "relative", overflow: "hidden", backgroundColor: "#e2e8f0",
+              margin: "0 auto", cursor: "move", border: "2px dashed #cbd5e1",
+              borderRadius: 8, width: "100%", aspectRatio: `${aspect} / 1`,
+              maxWidth: aspect === 1 ? 300 : "100%",
+            }}
+            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
+          >
+            <img ref={imgRef} src={imageSrc} alt="Crop target"
+              style={{
+                flexShrink: 0, pointerEvents: "none", maxWidth: "none",
+                transformOrigin: "center",
+                transform: `translate(${cropOffset.x}px, ${cropOffset.y}px) scale(${zoom})`,
+              }}
+            />
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
+              border: "1px solid #1677ff", boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)" }} />
+          </div>
+          <Flex align="center" gap={12} style={{ marginTop: 20 }}>
+            <Text style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8",
+              textTransform: "uppercase", whiteSpace: "nowrap" }}>Zoom</Text>
+            <Slider min={0.5} max={3} step={0.1} value={zoom} onChange={setZoom} style={{ flex: 1 }} />
+          </Flex>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function AccountSettings({
+  profile, setProfile, fileInputRef, logoInputRef, handleFileChange, onSave,
+}: {
+  profile: Profile;
+  setProfile: (p: Profile) => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  logoInputRef: React.RefObject<HTMLInputElement | null>;
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, type: "photo" | "logo") => void;
+  onSave: () => void;
+}) {
+  const addSocial = () =>
+    setProfile({ ...profile, socials: [...profile.socials, { platform: "Facebook", url: "" }] });
+  const updateSocial = (i: number, field: keyof Social, val: string) => {
+    const s = [...profile.socials];
+    s[i] = { ...s[i], [field]: val };
+    setProfile({ ...profile, socials: s });
+  };
+  const removeSocial = (i: number) =>
+    setProfile({ ...profile, socials: profile.socials.filter((_, idx) => idx !== i) });
+
+  return (
+    <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
+        <div>
+          <Title level={3} style={{ margin: 0, color: "#1E293B" }}>Account Settings</Title>
+          <Text type="secondary">Manage your profile, branding, and social links.</Text>
+        </div>
+        <Button type="primary" size="large" onClick={onSave}>Save Settings</Button>
+      </Flex>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Personal Info */}
+        <Card>
+          <SectionHeader icon={<IdcardOutlined style={{ fontSize: 18 }} />} title="Personal Information" />
+          <Flex gap={40} align="flex-start" style={{ flexWrap: "wrap" }}>
+            <Flex vertical align="center" gap={8} style={{ flexShrink: 0 }}>
+              <div style={{ position: "relative" }}>
+                <Avatar size={160} src={profile.photo} shape="square"
+                  style={{ display: "block", border: "4px solid white", boxShadow: "0 10px 25px rgba(0,0,0,0.12)", borderRadius: 16 }} />
+                <Button type="primary" shape="circle" icon={<UploadOutlined />} size="small"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ position: "absolute", bottom: -8, right: -8, width: 36, height: 36 }} />
+                <input ref={fileInputRef} type="file" style={{ display: "none" }} accept="image/*"
+                  onChange={e => handleFileChange(e, "photo")} />
+              </div>
+              <Text style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 8 }}>
+                Profile Photo
+              </Text>
+            </Flex>
+            <div style={{ flex: 1, minWidth: 300 }}>
+              <Form layout="vertical">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+                  <Form.Item label="First Name">
+                    <Input value={profile.firstName} onChange={e => setProfile({ ...profile, firstName: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Last Name">
+                    <Input value={profile.lastName} onChange={e => setProfile({ ...profile, lastName: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Professional Title" style={{ gridColumn: "1 / -1" }}>
+                    <Input value={profile.title} placeholder="e.g. Senior Loan Officer"
+                      onChange={e => setProfile({ ...profile, title: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Email Address">
+                    <Input prefix={<MailOutlined style={{ color: "#bfbfbf" }} />} type="email"
+                      value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Phone Number">
+                    <Input prefix={<PhoneOutlined style={{ color: "#bfbfbf" }} />}
+                      value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="License Number">
+                    <Input value={profile.licenseNumber} onChange={e => setProfile({ ...profile, licenseNumber: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Web Address">
+                    <Input prefix={<GlobalOutlined style={{ color: "#bfbfbf" }} />}
+                      value={profile.webAddress} onChange={e => setProfile({ ...profile, webAddress: e.target.value })} />
+                  </Form.Item>
+                  <Form.Item label="Marketing Disclaimer" style={{ gridColumn: "1 / -1" }}>
+                    <TextArea rows={3} value={profile.marketingDisclaimer} style={{ resize: "none" }}
+                      onChange={e => setProfile({ ...profile, marketingDisclaimer: e.target.value })} />
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+          </Flex>
+        </Card>
+
+        {/* Social Media */}
+        <Card>
+          <SectionHeader
+            icon={<LinkOutlined style={{ fontSize: 18 }} />}
+            title="Social Media Profiles"
+            accentColor="#1677ff" accentBg="rgba(22,119,255,0.06)"
+            extra={<Button icon={<PlusOutlined />} onClick={addSocial} size="small">Add Platform</Button>}
+          />
+          {profile.socials.length === 0
+            ? <div style={{ padding: "24px 0", color: "rgba(0,0,0,0.45)", textAlign: "center" }}>No social profiles added yet.</div>
+            : <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
+              {profile.socials.map((social, i) => (
+                <div key={i} style={{ padding: 16, backgroundColor: "#fafafa", border: "1px solid #f0f0f0", borderRadius: 8 }}>
+                  <Flex gap={8} align="center" style={{ marginBottom: 10 }}>
+                    <Select value={social.platform} onChange={val => updateSocial(i, "platform", val)} style={{ flex: 1 }}
+                      options={[
+                        { value: "LinkedIn", label: <Flex align="center" gap={6}><LinkedinOutlined />LinkedIn</Flex> },
+                        { value: "Twitter", label: <Flex align="center" gap={6}><TwitterOutlined />Twitter</Flex> },
+                        { value: "Facebook", label: <Flex align="center" gap={6}><FacebookOutlined />Facebook</Flex> },
+                        { value: "Instagram", label: <Flex align="center" gap={6}><InstagramOutlined />Instagram</Flex> },
+                      ]}
+                    />
+                    <Button type="text" danger icon={<DeleteOutlined />} size="small" onClick={() => removeSocial(i)} />
+                  </Flex>
+                  <Input placeholder="https://..." value={social.url}
+                    onChange={e => updateSocial(i, "url", e.target.value)}
+                    prefix={<SocialIcon platform={social.platform} />} size="small" />
+                </div>
+              ))}
+            </div>
+          }
+        </Card>
+
+        {/* Company Branding */}
+        <Card>
+          <SectionHeader icon={<BankOutlined style={{ fontSize: 18 }} />} title="Company Branding"
+            accentColor="#52c41a" accentBg="rgba(82,196,26,0.06)" />
+          <Flex gap={40} align="flex-start" style={{ flexWrap: "wrap" }}>
+            <div style={{ flex: 2, minWidth: 280 }}>
+              <Text style={{ fontSize: 12, fontWeight: 700, color: "#8c8c8c", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 10 }}>
+                Company Logo (Horizontal 3:1)
+              </Text>
+              <div onClick={() => logoInputRef.current?.click()}
+                style={{ height: 160, border: "2px dashed #d9d9d9", borderRadius: 8, backgroundColor: "#fafafa",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s, background-color 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#1677ff"; e.currentTarget.style.backgroundColor = "#f0f7ff"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#d9d9d9"; e.currentTarget.style.backgroundColor = "#fafafa"; }}
+              >
+                {profile.companyLogo
+                  ? <img src={profile.companyLogo} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 24 }} />
+                  : <>
+                    <UploadOutlined style={{ fontSize: 32, color: "#d9d9d9", marginBottom: 8 }} />
+                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>Drop company logo here</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>Click to browse</Text>
+                  </>
+                }
+              </div>
+              <input ref={logoInputRef} type="file" style={{ display: "none" }} accept="image/*"
+                onChange={e => handleFileChange(e, "logo")} />
+            </div>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <Text style={{ fontSize: 12, fontWeight: 700, color: "#8c8c8c", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 16 }}>
+                <BgColorsOutlined style={{ marginRight: 6 }} />Brand Colors
+              </Text>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  { label: "Primary", key: "primaryColor" as const },
+                  { label: "Secondary", key: "secondaryColor" as const },
+                ].map(({ label, key }) => (
+                  <div key={key} style={{ padding: "12px 16px", backgroundColor: "#fafafa", border: "1px solid #f0f0f0", borderRadius: 8 }}>
+                    <Flex align="center" gap={14}>
+                      <ColorPicker value={profile[key]}
+                        onChange={(_, hex) => setProfile({ ...profile, [key]: hex })} size="large" />
+                      <div>
+                        <Text style={{ fontSize: 10, fontWeight: 700, color: "#bfbfbf", textTransform: "uppercase", display: "block", letterSpacing: "0.06em" }}>
+                          {label}
+                        </Text>
+                        <Text style={{ fontFamily: "monospace", fontSize: 14 }}>{profile[key]}</Text>
+                      </div>
+                    </Flex>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Flex>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // Pre-auth: right-side value prop panel
 // ─────────────────────────────────────────────────────────────
-const STAGE_CONTENT: Record<RegStep, { icon: React.ReactNode; title: string; desc: string }> = {
+const STAGE_CONTENT: Record<RegStep, { icon: React.ReactNode; title: string; desc: string; tags: string[] }> = {
   role: {
     icon: <StarOutlined style={{ fontSize: 40, color: "rgba(255,255,255,0.5)" }} />,
     title: "Win more deals with Buy Before You Sell",
     desc: "Turn contingent buyers into all-cash buyers and give your clients the edge that closes deals.",
+    tags: ["NMLS Verified", "SOC 2 Compliant", "RESPA Aligned"],
   },
   identity: {
     icon: <SafetyCertificateOutlined style={{ fontSize: 40, color: "rgba(255,255,255,0.5)" }} />,
     title: "Verified wholesale connectivity",
     desc: "NMLS-synced identity means your compliance is locked in before you touch a single deal.",
+    tags: ["NMLS Verified", "SOC 2 Compliant", "RESPA Aligned"],
   },
   email: {
     icon: <MailOutlined style={{ fontSize: 40, color: "rgba(255,255,255,0.5)" }} />,
     title: "Compliance-first design",
     desc: "Corporate email enforcement protects broker compensation records and keeps your data secure.",
+    tags: ["NMLS Verified", "SOC 2 Compliant", "RESPA Aligned"],
   },
   otp: {
-    icon: <LockOutlined style={{ fontSize: 40, color: "rgba(255,255,255,0.5)" }} />,
-    title: "Secure professional access",
-    desc: "One-time verification confirms you're accessing from the firm on record.",
+    icon: <FileTextOutlined style={{ fontSize: 40, color: "rgba(255,255,255,0.5)" }} />,
+    title: "Your brand on every flyer",
+    desc: "Once you're in, generate co-branded marketing flyers for every Flyhomes product — pre-filled with your photo, logo, colors, and contact info. Ready to share in seconds.",
+    tags: ["Co-branded PDFs", "4 Product Templates", "One-click Download"],
   },
 };
 
@@ -145,7 +497,7 @@ function ValuePropPanel({ step }: { step: RegStep }) {
         <Divider style={{ borderColor: "rgba(255,255,255,0.08)", margin: "40px 0 32px" }} />
 
         <Flex gap={8} wrap="wrap">
-          {["NMLS Verified", "SOC 2 Compliant", "RESPA Aligned"].map(label => (
+          {c.tags.map(label => (
             <Tag key={label} style={{
               background: "rgba(255,255,255,0.06)",
               borderColor: "rgba(255,255,255,0.1)",
@@ -453,7 +805,7 @@ function WelcomeModal({ onClose, onNav }: { onClose: () => void; onNav: (v: Acti
       </Text>
       <Flex vertical gap={12}>
         {[
-          { num: "01", icon: <SettingOutlined style={{ color: PRIMARY }} />, label: "Set up co-branded marketing", desc: "Add your photo, logo, and brand colors so every generated piece looks like you.", cta: "Go to Settings", view: "settings" as ActiveView },
+          { num: "01", icon: <SettingOutlined style={{ color: PRIMARY }} />, label: "Set up co-branded marketing", desc: "Add your photo, logo, and brand colors so every generated piece looks like you.", cta: "Account Settings", view: "settings" as ActiveView },
           { num: "02", icon: <BookOutlined style={{ color: SIDEBAR_ACTIVE }} />, label: "Learn about products & guidelines", desc: "Understand Buy Before You Sell, Instant Equity, and Cash Offer so you can advise clients confidently.", cta: "Browse Resources", view: "resources" as ActiveView },
           { num: "03", icon: <FolderOutlined style={{ color: "#52c41a" }} />, label: "Start your pipeline", desc: "Submit your first scenario for expert review. Our team typically responds within 1 business day.", cta: "Open Pipeline", view: "pipeline" as ActiveView },
         ].map(item => (
@@ -481,6 +833,36 @@ function Dashboard({ nmlsData, userName }: { nmlsData: NmlsData | null; userName
   const [activeView, setActiveView] = useState<ActiveView>("pipeline");
   const [showWelcome, setShowWelcome] = useState(true);
   const [completedTasks, setCompletedTasks] = useState<CompletedTasks>({ profile: false, learn: false, pipeline: false });
+  const [messageApi, contextHolder] = message.useMessage();
+  const [profile, setProfile] = useState<Profile>({
+    firstName: nmlsData?.name.split(" ")[0] ?? "New",
+    lastName: nmlsData?.name.split(" ").slice(1).join(" ") ?? "User",
+    title: "Loan Officer",
+    email: "",
+    phone: "",
+    licenseNumber: nmlsData?.nmlsId ?? "",
+    webAddress: "",
+    marketingDisclaimer: "",
+    photo: "",
+    companyLogo: null,
+    primaryColor: "#1677ff",
+    secondaryColor: "#4c7994",
+    socials: [],
+  });
+  const [cropper, setCropper] = useState<CropperState>({ isOpen: false, src: null, aspect: 1, type: null });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "photo" | "logo") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      setCropper({ isOpen: true, src: ev.target?.result as string, aspect: type === "photo" ? 1 : 3, type });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const completedCount = Object.values(completedTasks).filter(Boolean).length;
 
@@ -489,6 +871,7 @@ function Dashboard({ nmlsData, userName }: { nmlsData: NmlsData | null; userName
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      {contextHolder}
       {/* Sidebar */}
       <Sider width={240} style={{ backgroundColor: SIDEBAR_BG, position: "relative" }}>
         <Flex align="center" gap={8} style={{ height: 64, padding: "0 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -505,7 +888,7 @@ function Dashboard({ nmlsData, userName }: { nmlsData: NmlsData | null; userName
             { key: "pipeline", icon: <AppstoreOutlined />, label: "Pipeline" },
             { key: "create-deal", icon: <PlusOutlined />, label: "Create a deal" },
             { key: "resources", icon: <BookOutlined />, label: "Resources" },
-            { key: "settings", icon: <SettingOutlined />, label: "Settings" },
+            { key: "settings", icon: <SettingOutlined />, label: "Account Settings" },
           ]}
           onClick={({ key }) => {
             if (["pipeline", "resources", "settings"].includes(key)) {
@@ -613,21 +996,14 @@ function Dashboard({ nmlsData, userName }: { nmlsData: NmlsData | null; userName
           )}
 
           {activeView === "settings" && (
-            <div>
-              <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-                <Title level={3} style={{ margin: 0 }}>Settings</Title>
-                <Button type="primary">Save Settings</Button>
-              </Flex>
-              <Card>
-                <Text type="secondary">Profile management is handled in the Profile Management prototype.</Text>
-                {nmlsData && (
-                  <Alert type="info" showIcon style={{ marginTop: 16 }}
-                    message={<Text strong>{nmlsData.name}</Text>}
-                    description={`${nmlsData.company} · NMLS #${nmlsData.nmlsId}`}
-                  />
-                )}
-              </Card>
-            </div>
+            <AccountSettings
+              profile={profile}
+              setProfile={setProfile}
+              fileInputRef={fileInputRef}
+              logoInputRef={logoInputRef}
+              handleFileChange={handleFileChange}
+              onSave={() => messageApi.success("Account settings saved.")}
+            />
           )}
         </Content>
       </Layout>
@@ -635,6 +1011,18 @@ function Dashboard({ nmlsData, userName }: { nmlsData: NmlsData | null; userName
       {showWelcome && (
         <WelcomeModal onClose={() => setShowWelcome(false)} onNav={v => { setActiveView(v); setShowWelcome(false); }} />
       )}
+
+      <ImageCropperModal
+        isOpen={cropper.isOpen}
+        onClose={() => setCropper({ ...cropper, isOpen: false })}
+        imageSrc={cropper.src}
+        aspect={cropper.aspect}
+        title={cropper.type === "photo" ? "Perfect Your Profile Photo" : "Brand Your Company Logo"}
+        onCropComplete={data => {
+          if (cropper.type === "photo") setProfile(p => ({ ...p, photo: data }));
+          else setProfile(p => ({ ...p, companyLogo: data }));
+        }}
+      />
     </Layout>
   );
 }

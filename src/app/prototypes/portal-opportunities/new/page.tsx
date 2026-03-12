@@ -9,12 +9,14 @@ import {
   Col,
   Divider,
   Flex,
+  Input,
   InputNumber,
   Row,
   Spin,
   Typography,
 } from "antd";
 import {
+  AppstoreOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
   BankOutlined,
@@ -22,6 +24,7 @@ import {
   FileTextOutlined,
   HomeOutlined,
   InfoCircleOutlined,
+  SwapOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
@@ -207,6 +210,8 @@ export default function NewOpportunityPage() {
   const [addressQuery, setAddressQuery] = useState("");
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [loadingAddress, setLoadingAddress] = useState(false);
+  const [borrowerName, setBorrowerName] = useState("");
+  const [notes, setNotes] = useState("");
 
   // GBC is always auto-calculated: 75% of departing value
   const gbcValue =
@@ -731,68 +736,226 @@ export default function NewOpportunityPage() {
 
   // ── Step 3: Results ────────────────────────────────────────────────────────
 
+  const pp = form.purchasePrice ?? 1500000;
+  const dv = form.departingValue ?? 0;
+  const m1 = form.mortgage1 ?? 0;
+  const opportunityTitle = form.addressDisplay
+    ? `Opportunity — ${form.addressDisplay}`
+    : form.addressComponents?.street_line
+    ? `Opportunity — ${form.addressComponents.street_line}`
+    : "Opportunity — New";
+
+  const SCENARIOS = [
+    {
+      key: "ie",
+      icon: <HomeOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "Instant Equity (1st lien)",
+      maxLoan: Math.round(pp * 0.9),
+      payoff: null as number | null,
+      ltvPct: 75,
+      originationPct: 2,
+      gbcFee: 5000 as number | null,
+    },
+    {
+      key: "co",
+      icon: <BankOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "Cash Offer",
+      maxLoan: Math.round(pp * 0.75),
+      payoff: null as number | null,
+      ltvPct: 70,
+      originationPct: 1.5,
+      gbcFee: 5000 as number | null,
+    },
+    {
+      key: "cc",
+      icon: <SwapOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "Cross Collateral",
+      maxLoan: Math.round(pp * 0.8),
+      payoff: null as number | null,
+      ltvPct: 75,
+      originationPct: 1.5,
+      gbcFee: null as number | null,
+    },
+    {
+      key: "combo",
+      icon: <AppstoreOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "Instant Equity+Cash Offer Combo",
+      maxLoan: Math.round((pp + dv) * 0.65),
+      payoff: m1 > 0 ? m1 : null as number | null,
+      ltvPct: 65,
+      originationPct: 1.75,
+      gbcFee: 7500 as number | null,
+    },
+  ];
+
   const step3 = (
     <div>
-      <Flex align="center" gap={10} style={{ marginBottom: 20 }}>
+      {/* Header row */}
+      <Flex justify="space-between" align="center" style={{ marginBottom: 14 }}>
+        <Flex align="center" gap={8}>
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => setStep(form.departingChoice === "none" ? 0 : 1)}
+            style={{ color: "rgba(0,0,0,0.45)", padding: "0 4px" }}
+          />
+          <Text strong style={{ fontSize: 17 }}>{opportunityTitle}</Text>
+        </Flex>
         <Button
           type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => setStep(form.departingChoice === "none" ? 0 : 1)}
-          style={{ color: "rgba(0,0,0,0.45)", padding: "0 4px" }}
-        />
-        <Title level={4} style={{ margin: 0 }}>Results</Title>
+          onClick={() => { setStep(0); setForm(f => ({ ...f, purchasePrice: null, departingChoice: null, addressDisplay: "", addressComponents: null, property: null, departingValue: null, mortgage1: null, lien2: 0 })); }}
+          style={{ color: "rgba(0,0,0,0.45)", fontSize: 12 }}
+        >
+          Start Over
+        </Button>
       </Flex>
 
-      <div
-        style={{
-          backgroundColor: "#fff",
-          border: "1px solid #f0f0f0",
-          borderRadius: 8,
-          padding: 24,
-          maxWidth: 640,
-        }}
-      >
-        <Title level={5} style={{ marginBottom: 16, color: "#4c7994" }}>Opportunity Summary</Title>
+      {/* Disclaimer banner */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: "rgba(224,232,237,0.5)", border: "1px solid #f0f0f0",
+        borderRadius: 6, padding: "9px 14px", marginBottom: 14,
+      }}>
+        <InfoCircleOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", flexShrink: 0 }} />
+        <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.45)" }}>
+          Estimates only. Not an offer. Convert to Deal for formal research.{" "}
+          <span style={{ color: "rgba(0,0,0,0.23)" }}>Like a mortgage pre-qual — subject to verification.</span>
+        </Text>
+      </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <tbody>
-            {[
-              ["Purchase Price", form.purchasePrice != null ? fmt(form.purchasePrice) : "—"],
-              ["Departing Address", form.addressDisplay || (form.departingChoice === "none" ? "No departing property" : "Manual entry")],
-              ["Departing Value", form.departingValue != null ? fmt(form.departingValue) : "—"],
-              ["Est. 1st Mortgage", form.mortgage1 != null ? fmt(form.mortgage1) : "—"],
-              ["Est. 2nd Lien", fmt(form.lien2 ?? 0)],
-              ["Est. GBC Value", gbcValue != null ? fmt(gbcValue) : "—"],
-            ].map(([label, value]) => (
-              <tr
-                key={label}
-                style={{ borderBottom: "1px solid #f0f0f0" }}
-              >
-                <td style={{ padding: "10px 0", color: "rgba(0,0,0,0.45)", width: "50%" }}>{label}</td>
-                <td style={{ padding: "10px 0", fontWeight: 500 }}>{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Summary bar */}
+      <div style={{
+        background: "#fff", border: "1px solid #f0f0f0", borderRadius: 6,
+        padding: "10px 18px", marginBottom: 14, display: "flex", gap: 40,
+      }}>
+        {[
+          { label: "Purchase Price", value: form.purchasePrice != null ? fmt(form.purchasePrice) : "—" },
+          { label: "Departing Value", value: form.departingValue != null ? fmt(form.departingValue) : "—" },
+          { label: "1st Mortgage", value: form.mortgage1 != null ? fmt(form.mortgage1) : "—" },
+        ].map(({ label, value }) => (
+          <div key={label}>
+            <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+              {label}
+            </Text>
+            <Text style={{ fontSize: 15 }}>{value}</Text>
+          </div>
+        ))}
+      </div>
 
-        <Alert
-          type="warning"
-          message="These are estimates only and do not constitute an offer. GBC value is subject to underwriting."
-          style={{ marginTop: 20, fontSize: 11 }}
-          showIcon
-        />
+      {/* Product cards */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 14,
+        marginBottom: 14,
+      }}>
+        {SCENARIOS.map(s => {
+          const requested = Math.round(pp * s.ltvPct / 100);
+          const origination = Math.round(requested * s.originationPct / 100);
+          const maxNet = s.payoff != null ? s.maxLoan - s.payoff : s.maxLoan;
+          const rows: { label: string; value: string }[] = [
+            { label: "MAX LOAN:", value: fmt(s.maxLoan) },
+            { label: "PAYOFF:", value: s.payoff != null ? fmt(s.payoff) : "N/A" },
+            { label: "MAX NET:", value: fmt(maxNet) },
+            { label: `REQUESTED:`, value: `${fmt(requested)} (${s.ltvPct}%)` },
+            { label: `ORIGINATION (${s.originationPct}%):`, value: fmt(origination) },
+            { label: "GBC FEE:", value: s.gbcFee != null ? fmt(s.gbcFee) : "-" },
+          ];
+          return (
+            <div key={s.key} style={{
+              background: "#fff", border: "1px solid #f0f0f0",
+              borderRadius: 10, display: "flex", flexDirection: "column",
+            }}>
+              {/* Icon + name */}
+              <div style={{ padding: "17px 17px 0" }}>
+                <div style={{
+                  width: 42, height: 42, background: "#e0e8ed", borderRadius: 6,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 14,
+                }}>
+                  {s.icon}
+                </div>
+                <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.88)", display: "block", marginBottom: 14 }}>
+                  {s.name}
+                </Text>
+              </div>
 
-        <Flex justify="space-between" style={{ marginTop: 20 }}>
-          <Button onClick={() => router.push("/prototypes/portal-opportunities")}>
-            Back to Pipeline
-          </Button>
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#4c7994", borderColor: "#4c7994" }}
-          >
-            Create Deal
-          </Button>
-        </Flex>
+              <div style={{ height: 1, background: "#f0f0f0", margin: "0 17px" }} />
+
+              {/* Key-value rows */}
+              <div style={{ padding: "14px 17px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                {rows.map(({ label, value }) => (
+                  <Flex key={label} justify="space-between" align="center">
+                    <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {label}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.88)" }}>{value}</Text>
+                  </Flex>
+                ))}
+              </div>
+
+              <div style={{ height: 1, background: "#f0f0f0", margin: "0 17px" }} />
+
+              {/* CTA */}
+              <div style={{ padding: 17 }}>
+                <Button
+                  block
+                  style={{ background: "#4c7994", borderColor: "#4c7994", color: "#fff", borderRadius: 6 }}
+                  icon={<ArrowRightOutlined />}
+                  iconPosition="end"
+                >
+                  Convert to Deal
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Borrower context */}
+      <div style={{
+        background: "#fff", border: "1px solid #f0f0f0",
+        borderRadius: 10, overflow: "hidden",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+      }}>
+        <div style={{
+          background: "rgba(224,232,237,0.2)", borderBottom: "1px solid #f0f0f0",
+          padding: "12px 18px",
+        }}>
+          <Text style={{ fontSize: 10.5, fontWeight: 500, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Borrower Context (optional)
+          </Text>
+        </div>
+        <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div>
+            <Flex align="center" gap={6} style={{ marginBottom: 6 }}>
+              <HomeOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }} />
+              <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>Borrower Name</Text>
+            </Flex>
+            <Input
+              placeholder="e.g. Smith"
+              value={borrowerName}
+              onChange={e => setBorrowerName(e.target.value)}
+              style={{ borderColor: "#f0f0f0", borderRadius: 6, fontSize: 12 }}
+            />
+            <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.27)", display: "block", marginTop: 4 }}>
+              Required when converting to a Deal
+            </Text>
+          </div>
+          <div>
+            <Flex align="center" gap={6} style={{ marginBottom: 6 }}>
+              <FileTextOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }} />
+              <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>Notes</Text>
+            </Flex>
+            <Input.TextArea
+              placeholder="Add context for this opportunity..."
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={3}
+              style={{ borderColor: "#f0f0f0", borderRadius: 6, fontSize: 12, resize: "none" }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
