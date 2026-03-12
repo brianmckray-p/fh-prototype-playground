@@ -984,7 +984,7 @@ export default function AgentDashboard() {
         onCropComplete={data => {
           if (cropper.type === "photo") setProfile(p => ({ ...p, photo: data }));
           else setProfile(p => ({ ...p, companyLogo: data }));
-        }}
+          }}
       />
     </>
   );
