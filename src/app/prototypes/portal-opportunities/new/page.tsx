@@ -190,7 +190,7 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
 
 export default function NewOpportunityPage() {
   const router = useRouter();
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<WizardState>({

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, CommentOutlined, Flex, Input, Space, Table, Tabs, Typography } from "antd";
+import { Button, Flex, Input, Space, Table, Tabs, Typography } from "antd";
 import type { TableProps } from "antd";
 import { CommentOutlined as CommentIcon, FolderOutlined, LinkOutlined } from "@ant-design/icons";
 
