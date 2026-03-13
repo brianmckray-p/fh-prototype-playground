@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   Collapse,
+  ColorPicker,
   ConfigProvider,
   Divider,
   Drawer,
@@ -33,6 +34,7 @@ import {
   Tabs,
   Tag,
   Timeline,
+  Tooltip,
   Typography,
 } from "antd";
 import type { TableProps } from "antd";
@@ -76,6 +78,10 @@ import {
   ScissorOutlined,
   SendOutlined,
   ShareAltOutlined,
+  SwapOutlined,
+  InfoCircleOutlined,
+  ArrowRightOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Header, Content } = Layout;
@@ -272,10 +278,11 @@ function statusColor(status: string): string {
 // ─────────────────────────────────────────────────────────────
 // Home / Dashboard
 // ─────────────────────────────────────────────────────────────
-function HomeView({ onNavigate }: { onNavigate: (s: Section) => void }) {
+function HomeView({ onNavigate, onOpenMedha }: { onNavigate: (s: Section) => void; onOpenMedha: (q?: string) => void }) {
   const [askOpen, setAskOpen] = useState(false);
   const [askText, setAskText] = useState("");
   const [askSent, setAskSent] = useState(false);
+  const [medhaQuery, setMedhaQuery] = useState("");
 
   const stats = [
     { label: "Active Deals", value: "3", icon: <FolderOutlined />, color: ACCENT },
@@ -322,12 +329,75 @@ function HomeView({ onNavigate }: { onNavigate: (s: Section) => void }) {
   return (
     <div>
       {/* Welcome */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: 28 }}>
-        <div>
-          <Title level={3} style={{ margin: 0 }}>Welcome back, Brian</Title>
-          <Text type="secondary">Thursday, March 12, 2026</Text>
-        </div>
+      <Flex justify="space-between" align="baseline" style={{ marginBottom: 20 }}>
+        <Title level={3} style={{ margin: 0 }}>Welcome back, Brian</Title>
+        <Text type="secondary">Thursday, March 12, 2026</Text>
       </Flex>
+
+      {/* ── Medha AI Bar ── */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(124,58,237,0.07) 0%, rgba(167,139,250,0.04) 100%)",
+        border: "1px solid rgba(124,58,237,0.18)",
+        borderRadius: 16, padding: "22px 28px", marginBottom: 28,
+      }}>
+        <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            background: "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <ThunderboltOutlined style={{ color: "#fff", fontSize: 16 }} />
+          </div>
+          <div>
+            <Text strong style={{ fontSize: 14, color: "#7c3aed", display: "block", lineHeight: 1.2 }}>Ask Medha</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Your AI assistant — ask anything about deals, products, guidelines, or eligibility
+            </Text>
+          </div>
+        </Flex>
+
+        <Flex gap={8} style={{ marginBottom: 12 }}>
+          <Input
+            size="large"
+            placeholder="e.g. Can we do Instant Equity on a condo? What's the GBC fee? How do I start a scenario?"
+            value={medhaQuery}
+            onChange={e => setMedhaQuery(e.target.value)}
+            onPressEnter={() => { if (medhaQuery.trim()) { onOpenMedha(medhaQuery.trim()); setMedhaQuery(""); } }}
+            style={{ borderRadius: 10, borderColor: "rgba(124,58,237,0.3)", fontSize: 14, flex: 1 }}
+          />
+          <Button
+            type="primary"
+            size="large"
+            icon={<SendOutlined />}
+            disabled={!medhaQuery.trim()}
+            style={{ background: "#7c3aed", borderColor: "#7c3aed", borderRadius: 10, flexShrink: 0, paddingInline: 20 }}
+            onClick={() => { if (medhaQuery.trim()) { onOpenMedha(medhaQuery.trim()); setMedhaQuery(""); } }}
+          >
+            Ask
+          </Button>
+        </Flex>
+
+        <Flex gap={8} wrap="wrap">
+          {[
+            "What's the current Instant Equity rate?",
+            "Can I run a GBC on a condo?",
+            "What docs do I need for a Cash Offer?",
+            "Walk me through the BBYS process",
+          ].map(chip => (
+            <div
+              key={chip}
+              onClick={() => { onOpenMedha(chip); }}
+              style={{
+                background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)",
+                borderRadius: 20, padding: "5px 13px", fontSize: 12, color: "#7c3aed",
+                cursor: "pointer", userSelect: "none",
+              }}
+            >
+              {chip}
+            </div>
+          ))}
+        </Flex>
+      </div>
 
       {/* Quick Actions — hero row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
@@ -336,23 +406,23 @@ function HomeView({ onNavigate }: { onNavigate: (s: Section) => void }) {
             key={a.label}
             hoverable
             onClick={a.onClick}
-            styles={{ body: { padding: "28px 24px 24px" } }}
+            styles={{ body: { padding: "18px 20px" } }}
             style={{ borderTop: `3px solid ${a.color}`, cursor: "pointer" }}
           >
-            <div style={{
-              width: 48, height: 48, borderRadius: 12,
-              background: `${a.color}15`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, color: a.color,
-              marginBottom: 16,
-            }}>
-              {a.icon}
-            </div>
-            <Text strong style={{ fontSize: 15, display: "block", marginBottom: 6 }}>{a.label}</Text>
-            <Text type="secondary" style={{ fontSize: 13, lineHeight: 1.6, display: "block", marginBottom: 20 }}>
+            <Flex align="center" gap={12} style={{ marginBottom: 10 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                background: `${a.color}15`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 17, color: a.color,
+              }}>
+                {a.icon}
+              </div>
+              <Text strong style={{ fontSize: 14 }}>{a.label}</Text>
+            </Flex>
+            <Text type="secondary" style={{ fontSize: 13, lineHeight: 1.6 }}>
               {a.desc}
             </Text>
-            <Text style={{ fontSize: 13, color: a.color, fontWeight: 600 }}>{a.cta} →</Text>
           </Card>
         ))}
       </div>
@@ -732,14 +802,22 @@ function DealDetailView({ deal, onBack, profile, branding }: { deal: Deal; onBac
 
   return (
     <div>
-      <Flex align="center" gap={12} style={{ marginBottom: 20 }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack} style={{ color: "rgba(0,0,0,0.45)" }} />
-        <div style={{ flex: 1 }}>
-          <Title level={4} style={{ margin: 0 }}>{deal.id} — {deal.borrower}</Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>{deal.address}</Text>
-        </div>
-        <Tag color={statusColor(deal.status)} style={{ fontSize: 13, padding: "3px 10px" }}>{deal.status}</Tag>
-      </Flex>
+      {/* Breadcrumb nav */}
+      <Card styles={{ body: { padding: "12px 24px" } }} style={{ marginBottom: 16, borderRadius: 8 }}>
+        <Flex justify="space-between" align="center">
+          <Breadcrumb
+            items={[
+              { title: <a onClick={onBack} style={{ color: "rgba(0,0,0,0.45)", cursor: "pointer" }}>Pipeline</a> },
+              { title: <a onClick={onBack} style={{ color: "rgba(0,0,0,0.45)", cursor: "pointer" }}>Deals</a> },
+              { title: <Text strong>{deal.id} — {deal.borrower}</Text> },
+            ]}
+          />
+          <Flex align="center" gap={12}>
+            <Text type="secondary" style={{ fontSize: 13 }}>{deal.address}</Text>
+            <Tag color={statusColor(deal.status)} style={{ fontSize: 12, padding: "2px 10px", margin: 0 }}>{deal.status}</Tag>
+          </Flex>
+        </Flex>
+      </Card>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16, marginBottom: 16 }}>
         <Card title="Deal Summary">
@@ -778,7 +856,7 @@ function DealDetailView({ deal, onBack, profile, branding }: { deal: Deal; onBac
         <Card title="Deal Timeline">
           <Timeline
             items={[
-              { color: ACCENT, children: <><Text strong>Deal Created</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>Opportunity converted · {deal.updated}</Text></> },
+              { color: ACCENT, children: <><Text strong>Deal Created</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>Scenario converted · {deal.updated}</Text></> },
               { color: ACCENT, children: <><Text strong>Under Review</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>Flyhomes team reviewing scenario</Text></> },
               isReady
                 ? { color: "#52c41a", dot: <CheckCircleFilled style={{ color: "#52c41a" }} />, children: <><Text strong style={{ color: "#52c41a" }}>Recommendation Ready</Text><br /><Text type="secondary" style={{ fontSize: 12 }}>Review your product recommendation</Text></> }
@@ -1204,6 +1282,673 @@ function BorrowerApplicationWizard({
 }
 
 // ─────────────────────────────────────────────────────────────
+// GBC Offer Page
+// ─────────────────────────────────────────────────────────────
+function GBCOfferPage({ deal, profile, branding, onBack }: {
+  deal: Deal; profile: UserProfile; branding: BrandingData; onBack: () => void;
+}) {
+  const prop = lookupPropertyData(deal.address);
+  const loanNum = parseInt(deal.loanAmount.replace(/[$,]/g, "")) || 500000;
+  const homeValue = prop?.value ?? Math.round(loanNum / 0.75);
+
+  // Mock GBC offer data — would be API-driven in production
+  const offerAmount       = Math.round(homeValue * 0.75);
+  const fee               = 5000;
+  const termDays          = 180;
+  const expirationDate    = "September 13, 2026";
+  const resalePrice       = Math.round(homeValue * 0.9);
+  const secondInstallment = resalePrice - offerAmount;
+  const worstCaseNet      = offerAmount - fee - Math.round(homeValue * 0.02);
+
+  // In production this comes from the API; useState preserves the union type for TS
+  const [salabilityFactor] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
+  const riskFactors = [
+    "Property is located in a slower-moving market segment",
+    "Home may benefit from pre-listing updates or staging",
+    "Seasonal timing may affect buyer demand",
+  ];
+
+  const agentName  = `${profile.firstName} ${profile.lastName}`;
+  const fmt        = (n: number) => `$${Math.round(n).toLocaleString()}`;
+  const [acceptOpen,   setAcceptOpen]   = useState(false);
+  const [revisionOpen, setRevisionOpen] = useState(false);
+  const [revisionNote, setRevisionNote] = useState("");
+
+  const salConfig = {
+    HIGH:   { label: "High Salability ✅",       color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", tagBg: "#22c55e" },
+    MEDIUM: { label: "Moderate Salability ⚠️",   color: "#b45309", bg: "#fffbeb", border: "#fde68a", tagBg: "#f59e0b" },
+    LOW:    { label: "Lower Salability 🔴",       color: "#b91c1c", bg: "#fff5f5", border: "#fecaca", tagBg: "#ef4444" },
+  };
+  const sal = salConfig[salabilityFactor];
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 11, textTransform: "uppercase", letterSpacing: "0.7px",
+    color: "rgba(0,0,0,0.38)", display: "block", marginBottom: 20,
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 10000, overflowY: "auto", background: "#f8f9fa" }}>
+
+      {/* Sticky top bar */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 20,
+        background: "#78350f", height: 56, padding: "0 32px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        borderBottom: "1px solid rgba(255,255,255,0.12)",
+      }}>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack}
+          style={{ color: "rgba(255,255,255,0.8)", fontSize: 13 }}>
+          Back to My Options
+        </Button>
+        <Text style={{ color: "#fef3c7", fontSize: 14, fontWeight: 600, letterSpacing: "-0.2px" }}>
+          Guaranteed Backup Contract Offer
+        </Text>
+        <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>
+          {agentName} · {profile.phone}
+        </Text>
+      </div>
+
+      {/* Hero — offer amount */}
+      <div style={{
+        background: "linear-gradient(135deg, #fef3c7 0%, #fef6e8 60%, #fff7ed 100%)",
+        borderBottom: "1px solid #f5e4c8", padding: "52px 40px 48px",
+      }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "rgba(255,255,255,0.7)", border: "1px solid #fde68a",
+            borderRadius: 20, padding: "4px 12px", marginBottom: 20,
+          }}>
+            <SafetyCertificateOutlined style={{ fontSize: 11, color: "#b45309" }} />
+            <Text style={{ fontSize: 11, color: "#b45309", fontWeight: 500 }}>
+              GBC Offer · Valid through {expirationDate}
+            </Text>
+          </div>
+
+          <Title level={2} style={{ margin: "0 0 8px", fontSize: 28, fontWeight: 700, color: "#1a1a1a" }}>
+            Your Guaranteed Backup Contract Offer
+          </Title>
+          <Text style={{ fontSize: 15, color: "rgba(0,0,0,0.5)", display: "block", marginBottom: 36 }}>
+            Based on our Salability Assessment of your home at {deal.address}
+          </Text>
+
+          <Flex align="flex-end" gap={10} style={{ marginBottom: 6 }}>
+            <Text style={{ fontSize: 60, fontWeight: 800, color: "#b45309", lineHeight: 1, letterSpacing: "-2px" }}>
+              {fmt(offerAmount)}
+            </Text>
+            <Tooltip title="This is the guaranteed price Flyhomes would pay for your home if it does not sell on the open market within the program period. This is your floor — not your expected sale price.">
+              <InfoCircleOutlined style={{ fontSize: 18, color: "rgba(0,0,0,0.28)", cursor: "help", marginBottom: 10 }} />
+            </Tooltip>
+          </Flex>
+          <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.4)" }}>
+            Guaranteed offer amount · Program period: {termDays} days · Expires {expirationDate}
+          </Text>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 40px 72px" }}>
+
+        {/* Salability Rating */}
+        <Card style={{ marginBottom: 24, borderRadius: 12, border: `1px solid ${sal.border}` }}
+          styles={{ body: { padding: "28px 32px", background: sal.bg } }}>
+          <Text style={sectionLabel}>Your Salability Rating</Text>
+          <div style={{
+            display: "inline-block", background: sal.tagBg, color: "#fff",
+            fontWeight: 700, fontSize: 13, borderRadius: 20, padding: "4px 14px", marginBottom: 16,
+          }}>
+            {sal.label}
+          </div>
+          <Text style={{ fontSize: 14, color: sal.color, lineHeight: 1.7, display: "block" }}>
+            {({
+              HIGH:   "Great news — your home shows no significant risk indicators. Based on our assessment, your property is well-positioned to sell on the open market within the program period.",
+              MEDIUM: "Your home has a few factors that may affect time on market. Here's what our team identified:",
+              LOW:    "Our assessment identified several factors that could make selling on the open market more challenging within the program period. Here's what we found:",
+            } as const)[salabilityFactor]}
+          </Text>
+          {salabilityFactor !== "HIGH" && (
+            <>
+              <ul style={{ margin: "14px 0 16px", paddingLeft: 22 }}>
+                {riskFactors.map((r, i) => (
+                  <li key={i} style={{ fontSize: 14, color: "rgba(0,0,0,0.65)", marginBottom: 6, lineHeight: 1.65 }}>{r}</li>
+                ))}
+              </ul>
+              <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.48)", lineHeight: 1.65, display: "block" }}>
+                {salabilityFactor === "MEDIUM"
+                  ? "These factors are taken into account in your offer amount. Your Flyhomes team can connect you with tools and resources to help maximize your sale price."
+                  : "Your GBC offer reflects these conditions. Flyhomes is still here to help — your agent and loan officer can walk you through strategies to improve your outcome."}
+              </Text>
+            </>
+          )}
+        </Card>
+
+        {/* How the GBC Works */}
+        <Card style={{ marginBottom: 24, borderRadius: 12, border: "1px solid #f0f0f0" }}
+          styles={{ body: { padding: "28px 32px" } }}>
+          <Text style={sectionLabel}>How the GBC Works</Text>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32 }}>
+            {[
+              {
+                n: 1,
+                title: "Flyhomes makes you a guaranteed offer",
+                body: `We evaluate your home and issue a backup purchase contract at a set price — your floor. This removes the home sale contingency from your purchase transaction and the trailing debt from your DTI.`,
+              },
+              {
+                n: 2,
+                title: "You sell on the open market",
+                body: `You have ${termDays} days to sell your home with your agent at full market value. This is the expected and most common outcome.`,
+              },
+              {
+                n: 3,
+                title: "If your home doesn't sell, Flyhomes steps in",
+                body: `In the rare event your home doesn't sell within the program period, Flyhomes purchases your home in two installments (see details below). This has happened in fewer than 1% of GBC transactions.`,
+              },
+            ].map((s, i) => (
+              <div key={s.n}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "#b45309", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 14, fontWeight: 700, marginBottom: 14,
+                }}>
+                  {s.n}
+                </div>
+                {i < 2 && (
+                  <div style={{
+                    position: "absolute", top: 18, left: 36, width: "calc(100% - 36px)",
+                    height: 1, background: "#f5e4c8",
+                  }} />
+                )}
+                <Text style={{ fontSize: 14, fontWeight: 600, display: "block", marginBottom: 8 }}>{s.title}</Text>
+                <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", lineHeight: 1.65 }}>{s.body}</Text>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Your GBC Details */}
+        <Card style={{ marginBottom: 24, borderRadius: 12, border: "1px solid #f0f0f0" }}
+          styles={{ body: { padding: "28px 32px" } }}>
+          <Text style={sectionLabel}>Your GBC Details</Text>
+          <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid #f0f0f0" }}>
+            {[
+              { label: "GBC Offer Amount",        value: fmt(offerAmount),  bold: true,  tip: null },
+              { label: "GBC Fee",                 value: fmt(fee),          bold: false, tip: "The GBC fee is a one-time upfront fee paid prior to contract execution. It covers Flyhomes' cost to underwrite and guarantee your backup offer." },
+              { label: "Program Period",          value: `${termDays} days`,bold: false, tip: null },
+              { label: "Offer Expiration",        value: expirationDate,    bold: false, tip: null },
+              { label: "Worst Case Net Proceeds", value: fmt(worstCaseNet), bold: true,  tip: "This is the minimum you would receive if Flyhomes purchases your home — calculated as the GBC offer amount minus estimated costs." },
+            ].map((row, i, arr) => (
+              <Flex key={row.label} justify="space-between" align="center"
+                style={{
+                  padding: "14px 18px",
+                  background: i % 2 === 0 ? "#fafafa" : "#fff",
+                  borderBottom: i < arr.length - 1 ? "1px solid #f0f0f0" : "none",
+                }}>
+                <Flex align="center" gap={6}>
+                  <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.65)" }}>{row.label}</Text>
+                  {row.tip && (
+                    <Tooltip title={row.tip}>
+                      <InfoCircleOutlined style={{ fontSize: 13, color: "rgba(0,0,0,0.28)", cursor: "help" }} />
+                    </Tooltip>
+                  )}
+                </Flex>
+                <Text style={{ fontSize: 14, fontWeight: row.bold ? 700 : 400, color: row.bold ? "#b45309" : "rgba(0,0,0,0.88)" }}>
+                  {row.value}
+                </Text>
+              </Flex>
+            ))}
+          </div>
+        </Card>
+
+        {/* Worst Case — Two Installments */}
+        <Card style={{ marginBottom: 32, borderRadius: 12, border: "1px solid #f5e4c8" }}
+          styles={{ body: { padding: "28px 32px", background: "linear-gradient(145deg, #fdf8f0 0%, #fef6e8 100%)" } }}>
+          <Flex justify="space-between" align="baseline" style={{ marginBottom: 4 }}>
+            <Text style={{ ...sectionLabel, marginBottom: 0 }}>If Flyhomes Exercises the Contract</Text>
+            <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.38)", fontStyle: "italic" }}>
+              Occurred in &lt;1% of GBC transactions
+            </Text>
+          </Flex>
+          <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 28 }}>
+            If your home doesn&apos;t sell within the program period, Flyhomes purchases it in two installments.
+          </Text>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", gap: 0 }}>
+            {/* First installment */}
+            <div style={{ paddingRight: 36 }}>
+              <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.6px", color: "#92400e", display: "block", marginBottom: 4 }}>
+                First Installment
+              </Text>
+              <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.38)", display: "block", marginBottom: 10 }}>
+                Paid at contract execution
+              </Text>
+              <Text style={{ fontSize: 36, fontWeight: 800, color: "#b45309", display: "block", lineHeight: 1.1, marginBottom: 14 }}>
+                {fmt(offerAmount)}
+              </Text>
+              <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", lineHeight: 1.7 }}>
+                This is the guaranteed contract price, paid to you when Flyhomes takes ownership of your home.
+              </Text>
+            </div>
+
+            <div style={{ background: "#f5e4c8" }} />
+
+            {/* Second installment */}
+            <div style={{ paddingLeft: 36 }}>
+              <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.6px", color: "#92400e", display: "block", marginBottom: 4 }}>
+                Second Installment
+              </Text>
+              <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.38)", display: "block", marginBottom: 10 }}>
+                Paid after resale
+              </Text>
+              <Text style={{ fontSize: 36, fontWeight: 800, color: "#b45309", display: "block", lineHeight: 1.1, marginBottom: 14 }}>
+                ~{fmt(secondInstallment)}
+              </Text>
+              <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", lineHeight: 1.7, display: "block", marginBottom: 14 }}>
+                After Flyhomes resells your home, you receive the difference between the resale price and your GBC offer amount.
+              </Text>
+              <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 8, padding: "10px 14px", border: "1px solid #fde68a" }}>
+                <Text style={{ fontSize: 11, color: "#92400e", display: "block", marginBottom: 3 }}>Calculation</Text>
+                <Text style={{ fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
+                  Est. resale ({fmt(resalePrice)}) − GBC offer ({fmt(offerAmount)}) = {fmt(secondInstallment)}
+                </Text>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 24, padding: "12px 16px", background: "rgba(255,255,255,0.55)", borderRadius: 8, border: "1px solid #f5e4c8" }}>
+            <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.42)", fontStyle: "italic" }}>
+              The second installment is an estimate only. Actual proceeds will depend on the final resale price and costs at the time of sale.
+            </Text>
+          </div>
+        </Card>
+
+        {/* Next Steps */}
+        <Text style={sectionLabel}>Next Steps</Text>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
+          {[
+            {
+              icon: <CheckCircleFilled style={{ fontSize: 24, color: "#b45309" }} />,
+              title: "Accept This Offer",
+              body: "Ready to move forward? Accepting initiates the contract process. Your loan officer will be notified.",
+              cta: "Accept Offer",
+              primary: true,
+              onClick: () => setAcceptOpen(true),
+            },
+            {
+              icon: <EditOutlined style={{ fontSize: 24, color: "#92400e" }} />,
+              title: "Request a Revision",
+              body: "Think the offer amount should be different? Submit a revision request with a note for our team.",
+              cta: "Request Revision",
+              primary: false,
+              onClick: () => setRevisionOpen(true),
+            },
+            {
+              icon: <PhoneOutlined style={{ fontSize: 24, color: "#92400e" }} />,
+              title: "Talk to Your Loan Officer",
+              body: "Have questions? Your loan officer or real estate agent can walk you through what this means for your transaction.",
+              cta: `Contact ${profile.firstName}`,
+              primary: false,
+              onClick: () => {},
+            },
+          ].map(card => (
+            <div key={card.title} style={{
+              background: "#fff",
+              border: card.primary ? "2px solid #b45309" : "1px solid #f0f0f0",
+              borderRadius: 12, padding: "24px 24px 20px",
+              display: "flex", flexDirection: "column",
+              boxShadow: card.primary ? "0 4px 16px rgba(180,83,9,0.12)" : "0 1px 4px rgba(0,0,0,0.05)",
+            }}>
+              <div style={{ marginBottom: 14 }}>{card.icon}</div>
+              <Text style={{ fontSize: 15, fontWeight: 600, display: "block", marginBottom: 8 }}>{card.title}</Text>
+              <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", lineHeight: 1.65, display: "block", marginBottom: 20, flex: 1 }}>
+                {card.body}
+              </Text>
+              <Button
+                type={card.primary ? "primary" : "default"}
+                style={card.primary ? { background: "#b45309", borderColor: "#b45309", fontWeight: 600, width: "100%" } : { width: "100%" }}
+                onClick={card.onClick}
+              >
+                {card.cta}
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {/* Legal footer */}
+        <div style={{ paddingTop: 24, borderTop: "1px solid #f0f0f0" }}>
+          <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.7 }}>
+            This offer is subject to completion of the full GBC underwriting process, property inspection, and execution of the GBC agreement. All values shown are estimates and do not constitute a commitment to purchase. Program availability subject to eligibility requirements. Flyhomes Mortgage, LLC.
+          </Text>
+        </div>
+      </div>
+
+      {/* Accept modal */}
+      <Modal open={acceptOpen} onCancel={() => setAcceptOpen(false)}
+        title="Accept Your GBC Offer" footer={null} centered zIndex={10002}>
+        <div style={{ padding: "8px 0" }}>
+          <Text style={{ display: "block", marginBottom: 16, fontSize: 14, color: "rgba(0,0,0,0.65)", lineHeight: 1.7 }}>
+            By accepting, you confirm you&apos;d like to move forward with the Guaranteed Backup Contract at{" "}
+            <Text strong>{fmt(offerAmount)}</Text>. Your loan officer <Text strong>{agentName}</Text> will be notified and will reach out to begin the contract process.
+          </Text>
+          <div style={{ background: "#fef3c7", borderRadius: 8, padding: "12px 16px", marginBottom: 24, border: "1px solid #fde68a" }}>
+            <Text style={{ fontSize: 13, color: "#92400e" }}>
+              GBC Fee of {fmt(fee)} is due prior to contract execution.
+            </Text>
+          </div>
+          <Flex gap={12} justify="flex-end">
+            <Button onClick={() => setAcceptOpen(false)}>Cancel</Button>
+            <Button type="primary" style={{ background: "#b45309", borderColor: "#b45309" }}
+              onClick={() => setAcceptOpen(false)}>
+              Confirm &amp; Accept
+            </Button>
+          </Flex>
+        </div>
+      </Modal>
+
+      {/* Revision modal */}
+      <Modal open={revisionOpen} onCancel={() => setRevisionOpen(false)}
+        title="Request a Revision" footer={null} centered zIndex={10002}>
+        <div style={{ padding: "8px 0" }}>
+          <Text style={{ display: "block", marginBottom: 16, fontSize: 14, color: "rgba(0,0,0,0.65)" }}>
+            Tell us why you think the offer should be revised. Our team will review and follow up within 1–2 business days.
+          </Text>
+          <Input.TextArea
+            rows={4} value={revisionNote} onChange={e => setRevisionNote(e.target.value)}
+            placeholder="e.g. I recently completed a kitchen remodel that I believe increases the home value..."
+            style={{ marginBottom: 20 }}
+          />
+          <Flex gap={12} justify="flex-end">
+            <Button onClick={() => setRevisionOpen(false)}>Cancel</Button>
+            <Button type="primary" style={{ background: "#b45309", borderColor: "#b45309" }}
+              onClick={() => { setRevisionOpen(false); setRevisionNote(""); }}>
+              Submit Request
+            </Button>
+          </Flex>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// GBC Request Flow (multi-step modal)
+// ─────────────────────────────────────────────────────────────
+const GBC_PHOTO_SLOTS = [
+  "Exterior Front", "Kitchen", "Primary Bedroom",
+  "Primary Bathroom", "Living Room", "Exterior Back",
+];
+const GBC_CONDITIONS = [
+  { value: "move-in",    emoji: "🟢", label: "Move-in ready / recently updated" },
+  { value: "good",       emoji: "🟡", label: "Good condition, minor wear" },
+  { value: "needs-work", emoji: "🟠", label: "Needs some work or updates" },
+  { value: "significant",emoji: "🔴", label: "Significant repairs needed" },
+];
+const GBC_TIMELINES = [
+  { value: "asap",      label: "ASAP / Already under contract on a new home" },
+  { value: "3mo",       label: "Within 3 months" },
+  { value: "3-6mo",     label: "3–6 months" },
+  { value: "exploring", label: "Just exploring options" },
+];
+
+function GBCRequestFlow({ open, onClose, onComplete, deal, brandColor }: {
+  open: boolean; onClose: () => void; onComplete: () => void; deal: Deal; brandColor: string;
+}) {
+  const prop = lookupPropertyData(deal.address);
+  const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
+  const [address, setAddress] = useState(deal.address);
+  const [unit, setUnit] = useState("");
+  const [beds, setBeds] = useState<number>(prop?.beds ?? 3);
+  const [baths, setBaths] = useState<number>(prop?.baths ?? 2);
+  const [sqft, setSqft] = useState<number>(prop?.sqft ?? 1800);
+  const [yearBuilt, setYearBuilt] = useState<number | null>(prop?.yearBuilt ?? null);
+  const [condition, setCondition] = useState<string | null>(null);
+  const [timeline, setTimeline] = useState<string | null>(null);
+  const [uploadedPhotos, setUploadedPhotos] = useState<Set<string>>(new Set());
+
+  function handleClose() {
+    onClose();
+    // defer reset so close animation plays first
+    setTimeout(() => { setStep(0); setDone(false); setCondition(null); setTimeline(null); setUploadedPhotos(new Set()); }, 400);
+  }
+
+  const TOTAL_STEPS = 5;
+  const canContinue = !(step === 2 && !condition) && !(step === 3 && !timeline);
+
+  const stepTitles = ["Address", "Details", "Condition", "Timeline", "Photos"];
+
+  function togglePhoto(name: string) {
+    setUploadedPhotos(prev => { const n = new Set(prev); n.has(name) ? n.delete(name) : n.add(name); return n; });
+  }
+
+  return (
+    <Modal open={open} onCancel={handleClose} footer={null} width={620}
+      title={null} styles={{ body: { padding: 0 } }} centered destroyOnClose={false}
+      zIndex={10001}
+    >
+      {!done ? (
+        <>
+          {/* Header + progress */}
+          <div style={{ padding: "24px 32px 20px", borderBottom: "1px solid #f0f0f0" }}>
+            <Flex align="center" gap={8} style={{ marginBottom: 14 }}>
+              <SafetyCertificateOutlined style={{ fontSize: 16, color: "#b45309" }} />
+              <Text style={{ fontSize: 13, fontWeight: 600, color: "#b45309" }}>
+                Guaranteed Backup Contract Request
+              </Text>
+            </Flex>
+            <Steps
+              current={step}
+              size="small"
+              items={stepTitles.map(t => ({ title: t }))}
+            />
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: "32px 32px 8px", minHeight: 340 }}>
+
+            {/* Step 0 — Address */}
+            {step === 0 && (
+              <div>
+                <Title level={4} style={{ margin: "0 0 6px" }}>Please confirm the address of the home</Title>
+                <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 28 }}>
+                  We&apos;ve pre-filled this from your file. Make any corrections needed.
+                </Text>
+                <div style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>Street Address</Text>
+                  <Input value={address} onChange={e => setAddress(e.target.value)} size="large"
+                    prefix={<HomeOutlined style={{ color: "rgba(0,0,0,0.3)" }} />} />
+                </div>
+                <div>
+                  <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>
+                    Unit / Apt{" "}
+                    <Text type="secondary" style={{ fontSize: 11 }}>(optional)</Text>
+                  </Text>
+                  <Input value={unit} onChange={e => setUnit(e.target.value)} size="large"
+                    placeholder="e.g. Unit 4B" style={{ maxWidth: 220 }} />
+                </div>
+              </div>
+            )}
+
+            {/* Step 1 — Home Details */}
+            {step === 1 && (
+              <div>
+                <Title level={4} style={{ margin: "0 0 6px" }}>Confirm details about your home</Title>
+                <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 28 }}>
+                  We&apos;ve pre-filled from property data. Update anything that&apos;s changed.
+                </Text>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                  <div>
+                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>Bedrooms</Text>
+                    <Select value={beds} onChange={setBeds} size="large" style={{ width: "100%" }}
+                      options={[1,2,3,4,5,6].map(n => ({ value: n, label: n < 6 ? `${n} bed${n > 1 ? "s" : ""}` : "6+ beds" }))} />
+                  </div>
+                  <div>
+                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>Bathrooms</Text>
+                    <Select value={baths} onChange={setBaths} size="large" style={{ width: "100%" }}
+                      options={[1, 1.5, 2, 2.5, 3, 3.5, 4, 5].map(n => ({ value: n, label: `${n} bath${n !== 1 ? "s" : ""}` }))} />
+                  </div>
+                  <div>
+                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>Approx. Square Footage</Text>
+                    <InputNumber
+                      value={sqft}
+                      onChange={v => setSqft(v ?? sqft)}
+                      size="large" style={{ width: "100%" }}
+                      formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      parser={v => Number(v?.replace(/,/g, "") ?? sqft)}
+                    />
+                  </div>
+                  <div>
+                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6 }}>
+                      Year Built{" "}
+                      <Text type="secondary" style={{ fontSize: 11 }}>(optional)</Text>
+                    </Text>
+                    <InputNumber
+                      value={yearBuilt ?? undefined}
+                      onChange={v => setYearBuilt(v)}
+                      size="large" style={{ width: "100%" }}
+                      placeholder="e.g. 2003" min={1800} max={2026}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 — Condition */}
+            {step === 2 && (
+              <div>
+                <Title level={4} style={{ margin: "0 0 6px" }}>How would you describe the current condition of your home?</Title>
+                <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 24 }}>
+                  Be as accurate as possible — this helps us prepare a more precise offer.
+                </Text>
+                <Flex vertical gap={10}>
+                  {GBC_CONDITIONS.map(c => (
+                    <div key={c.value} onClick={() => setCondition(c.value)}
+                      style={{
+                        padding: "14px 18px", borderRadius: 10, cursor: "pointer",
+                        border: `2px solid ${condition === c.value ? brandColor : "#e8e8e8"}`,
+                        background: condition === c.value ? `${brandColor}0a` : "#fff",
+                        display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s",
+                      }}
+                    >
+                      <span style={{ fontSize: 20, lineHeight: 1 }}>{c.emoji}</span>
+                      <Text style={{ fontSize: 14, fontWeight: condition === c.value ? 600 : 400 }}>{c.label}</Text>
+                    </div>
+                  ))}
+                </Flex>
+              </div>
+            )}
+
+            {/* Step 3 — Timeline */}
+            {step === 3 && (
+              <div>
+                <Title level={4} style={{ margin: "0 0 6px" }}>When are you hoping to move?</Title>
+                <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 24 }}>
+                  This helps our team prioritize your offer review.
+                </Text>
+                <Flex vertical gap={10}>
+                  {GBC_TIMELINES.map(t => (
+                    <div key={t.value} onClick={() => setTimeline(t.value)}
+                      style={{
+                        padding: "16px 20px", borderRadius: 10, cursor: "pointer",
+                        border: `2px solid ${timeline === t.value ? brandColor : "#e8e8e8"}`,
+                        background: timeline === t.value ? `${brandColor}0a` : "#fff",
+                        transition: "border-color 0.15s",
+                      }}
+                    >
+                      <Text style={{ fontSize: 14, fontWeight: timeline === t.value ? 600 : 400 }}>{t.label}</Text>
+                    </div>
+                  ))}
+                </Flex>
+              </div>
+            )}
+
+            {/* Step 4 — Photos */}
+            {step === 4 && (
+              <div>
+                <Title level={4} style={{ margin: "0 0 6px" }}>Upload property photos</Title>
+                <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 24 }}>
+                  Photos help us deliver the most accurate offer. Click any slot to mark it uploaded.
+                </Text>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+                  {GBC_PHOTO_SLOTS.map(name => {
+                    const added = uploadedPhotos.has(name);
+                    return (
+                      <div key={name} style={{ textAlign: "center" }}>
+                        <div
+                          onClick={() => togglePhoto(name)}
+                          style={{
+                            width: "100%", aspectRatio: "1", borderRadius: 10, cursor: "pointer",
+                            border: `2px ${added ? "solid" : "dashed"} ${added ? brandColor : "#d9d9d9"}`,
+                            background: added ? `${brandColor}0e` : "#fafafa",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          {added
+                            ? <CheckCircleFilled style={{ fontSize: 28, color: brandColor }} />
+                            : <PlusOutlined style={{ fontSize: 22, color: "#bfbfbf" }} />
+                          }
+                        </div>
+                        <Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 6 }}>{name}</Text>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Footer nav */}
+          <div style={{ padding: "20px 32px 28px", borderTop: "1px solid #f0f0f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Button onClick={step === 0 ? handleClose : () => setStep(s => s - 1)}>
+              {step === 0 ? "Cancel" : "Back"}
+            </Button>
+            <Flex align="center" gap={12}>
+              <Text type="secondary" style={{ fontSize: 12 }}>Step {step + 1} of {TOTAL_STEPS}</Text>
+              <Button
+                type="primary"
+                style={{ background: "#b45309", borderColor: "#b45309" }}
+                disabled={!canContinue}
+                onClick={() => step < TOTAL_STEPS - 1 ? setStep(s => s + 1) : setDone(true)}
+              >
+                {step === TOTAL_STEPS - 1 ? "Submit Request" : "Continue"}
+              </Button>
+            </Flex>
+          </div>
+        </>
+      ) : (
+        /* Completion screen */
+        <div style={{ padding: "60px 48px 56px", textAlign: "center" }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: "50%",
+            background: "#fef3c7", border: "2px solid #fde68a",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 24px",
+          }}>
+            <SafetyCertificateOutlined style={{ fontSize: 36, color: "#b45309" }} />
+          </div>
+          <Title level={3} style={{ margin: "0 0 12px" }}>Your request is on its way!</Title>
+          <Text style={{
+            fontSize: 15, color: "rgba(0,0,0,0.55)", display: "block",
+            maxWidth: 420, margin: "0 auto 36px", lineHeight: 1.65,
+          }}>
+            Our team will review your home details and prepare your Guaranteed Backup Contract offer.
+            You&apos;ll hear from us shortly — no commitment required.
+          </Text>
+          <Button type="primary" size="large"
+            style={{ background: "#b45309", borderColor: "#b45309", height: 50, paddingInline: 40, fontWeight: 600, fontSize: 15 }}
+            onClick={() => { handleClose(); onComplete(); }}
+          >
+            Return to My Dashboard
+          </Button>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Borrower Landing Page
 // ─────────────────────────────────────────────────────────────
 function BorrowerLandingPage({
@@ -1211,6 +1956,9 @@ function BorrowerLandingPage({
 }: { deal: Deal; profile: UserProfile; branding: BrandingData; onClose: () => void; selectedProductKeys?: string[] }) {
   const [openWorksheets, setOpenWorksheets] = useState<Set<string>>(new Set());
   const [appOpen, setAppOpen] = useState(false);
+  const [gbcFlowOpen, setGbcFlowOpen] = useState(false);
+  const [gbcSubmitted, setGbcSubmitted] = useState(false);
+  const [showGbcOffer, setShowGbcOffer] = useState(false);
   const brandColor = branding.primaryColor || ACCENT;
   const agentName = `${profile.firstName} ${profile.lastName}`;
 
@@ -1669,6 +2417,72 @@ function BorrowerLandingPage({
             </div>
           ))}
         </div>
+
+        {/* GBC Card — spans full width below 2-col product grid */}
+        <div style={{ marginTop: 4, marginBottom: 8 }}>
+          <div style={{
+            background: "linear-gradient(145deg, #fdf8f0 0%, #fef6e8 100%)",
+            border: "1px solid #f5e4c8",
+            borderRadius: 14,
+            overflow: "hidden",
+            boxShadow: "0 2px 12px rgba(180,110,0,0.09)",
+          }}>
+            <div style={{ height: 4, background: "linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)" }} />
+            <div style={{ padding: "24px 28px 24px" }}>
+              <Flex gap={18} align="flex-start">
+                <div style={{
+                  width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+                  background: "#fef3c7", border: "1px solid #fde68a",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <SafetyCertificateOutlined style={{ fontSize: 22, color: "#b45309" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Flex justify="space-between" align="flex-start" wrap="wrap" gap={16}>
+                    <div style={{ flex: 1, minWidth: 280 }}>
+                      <Text style={{ fontSize: 17, fontWeight: 700, color: "#78350f", display: "block", marginBottom: 10 }}>
+                        Guaranteed Backup Contract
+                      </Text>
+                      <Text style={{ fontSize: 14, color: "#92400e", lineHeight: 1.7, display: "block", marginBottom: 16 }}>
+                        Flyhomes will run a Salability Assessment on your home using industry-leading
+                        data and proprietary algorithms to determine a guaranteed contract value.
+                        You&apos;ll have up to 180 days to sell on the open market at full value.
+                        If your home doesn&apos;t sell, Flyhomes steps in — no sale contingency,
+                        no trailing debt, no surprises.
+                      </Text>
+                      <Flex align="center" gap={6} style={{ marginBottom: 20 }}>
+                        <CheckCircleFilled style={{ fontSize: 13, color: "#52c41a" }} />
+                        <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
+                          No cost or obligation to request your offer.
+                        </Text>
+                      </Flex>
+                      <Button
+                        type="primary"
+                        size="large"
+                        style={{ background: "#b45309", borderColor: "#b45309", fontWeight: 600, height: 46 }}
+                        onClick={() => gbcSubmitted ? setShowGbcOffer(true) : setGbcFlowOpen(true)}
+                      >
+                        {gbcSubmitted ? "View My Offer" : "Request My Offer"}
+                      </Button>
+                    </div>
+                    <div style={{
+                      background: "#fef3c7", borderRadius: 10, padding: "14px 20px",
+                      border: "1px solid #fde68a", flexShrink: 0, minWidth: 180, textAlign: "center",
+                    }}>
+                      <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "#92400e", display: "block", marginBottom: 4 }}>
+                        Up to
+                      </Text>
+                      <Text style={{ fontSize: 28, fontWeight: 700, color: "#b45309", display: "block", lineHeight: 1.1 }}>
+                        180
+                      </Text>
+                      <Text style={{ fontSize: 13, color: "#92400e", display: "block" }}>days to sell</Text>
+                    </div>
+                  </Flex>
+                </div>
+              </Flex>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Primary CTA */}
@@ -1747,6 +2561,23 @@ function BorrowerLandingPage({
         agentName={agentName}
         brandColor={brandColor}
       />
+
+      <GBCRequestFlow
+        open={gbcFlowOpen}
+        onClose={() => setGbcFlowOpen(false)}
+        onComplete={() => setGbcSubmitted(true)}
+        deal={deal}
+        brandColor={brandColor}
+      />
+
+      {showGbcOffer && (
+        <GBCOfferPage
+          deal={deal}
+          profile={profile}
+          branding={branding}
+          onBack={() => setShowGbcOffer(false)}
+        />
+      )}
     </div>
   );
 }
@@ -1798,7 +2629,7 @@ function lookupPropertyData(address: string): MockPropertyData | null {
 }
 type NewOppStep = "new-opp" | "property-details" | "results";
 const NEW_OPP_STEPS: { key: NewOppStep; label: string }[] = [
-  { key: "new-opp", label: "New Opportunity" },
+  { key: "new-opp", label: "New Scenario" },
   { key: "property-details", label: "Property Details" },
   { key: "results", label: "Results" },
 ];
@@ -1817,6 +2648,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
   const [presentSelected, setPresentSelected] = useState<string[]>([]);
   const [showBorrowerPreview, setShowBorrowerPreview] = useState(false);
   const [mockShareLink, setMockShareLink] = useState("");
+  const [numbersModal, setNumbersModal] = useState<string | null>(null);
 
   const stepIndex = NEW_OPP_STEPS.findIndex(s => s.key === step);
   const hasDepProperty = data.departingChoice !== "no-property";
@@ -1901,7 +2733,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
       address: data.departingAddress || "New Purchase",
       product: presentSelected[0] ?? "Cash Offer",
       loanAmount: `$${(data.purchasePrice ?? 0).toLocaleString()}`,
-      status: "Opportunity",
+      status: "Scenario",
       updated: new Date().toLocaleDateString(),
     };
     return (
@@ -1915,109 +2747,157 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
     );
   }
 
-  // ── Step 1: New Opportunity ──────────────────────────────────
+  // ── Step 1: New Scenario ──────────────────────────────────────
   if (step === "new-opp") return (
-    <div>
-      <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack} style={{ marginBottom: 16, paddingLeft: 0 }}>
-        Back to Pipeline
-      </Button>
-      <Card styles={{ body: { padding: 24 } }}>
-        <StepHeader />
-        <div style={{ marginBottom: 20 }}>
-          <Title level={4} style={{ margin: "0 0 4px" }}>New Opportunity</Title>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Enter a purchase price, then tell us about the borrower&apos;s departing property.
-          </Text>
-        </div>
+    <Card styles={{ body: { padding: 24 } }}>
+      <StepHeader />
 
-        <Card style={{ maxWidth: 504, borderColor: "#f0f0f0" }} styles={{ body: { padding: 22 } }}>
-          {/* Purchase Price */}
-          <div style={{ marginBottom: 22 }}>
-            <Text style={{ display: "block", marginBottom: 6 }}>Estimated Purchase Price</Text>
+      <div style={{
+        backgroundColor: "#fff",
+        borderRadius: 14,
+        boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)",
+        overflow: "hidden",
+      }}>
+        {/* Two-column body */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr" }}>
+
+          {/* LEFT: Purchase price + borrower */}
+          <div style={{ padding: "28px 32px 24px" }}>
+            <Text style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 8 }}>
+              Estimated Purchase Price
+            </Text>
             <InputNumber
-              prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+              prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.35)" }} />}
               placeholder="1,500,000"
               formatter={numFormatter}
               parser={numParser}
               value={data.purchasePrice}
               onChange={v => setData(d => ({ ...d, purchasePrice: v as number | null }))}
-              style={{ width: "100%" }}
+              style={{ width: "100%", height: 64, fontSize: 20, borderWidth: 2, borderRadius: 10 }}
               size="large"
             />
+
+            <div style={{ marginTop: 24 }}>
+              <Text style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 8 }}>
+                Borrower Name <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>(optional)</span>
+              </Text>
+              <Input
+                placeholder="e.g. Henderson"
+                value={data.borrowerName}
+                onChange={e => setData(d => ({ ...d, borrowerName: e.target.value }))}
+                style={{ height: 52, fontSize: 15, borderWidth: 2, borderRadius: 10 }}
+                size="large"
+              />
+            </div>
           </div>
 
-          {/* Departing property section */}
-          <Divider style={{ margin: "0 0 14px" }}>
-            <Text style={{ fontSize: 10, letterSpacing: "0.5px", textTransform: "uppercase", color: "rgba(0,0,0,0.45)" }}>
+          {/* Vertical divider */}
+          <div style={{ background: "#f0f0f0" }} />
+
+          {/* RIGHT: Departing property */}
+          <div style={{ padding: "28px 32px 24px" }}>
+            <Text style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 6 }}>
               Departing Property
             </Text>
-          </Divider>
-          <Text style={{ display: "block", fontSize: 12.25, marginBottom: 12 }}>
-            Does the borrower have a property to sell?
-          </Text>
+            <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.55)", display: "block", marginBottom: 16 }}>
+              Does the borrower have a property to sell?
+            </Text>
 
-          {/* 3 option cards */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-            <div style={optionCardStyle(data.departingChoice === "has-address")} onClick={() => handleChoice("has-address")}>
-              <div style={iconBox}><HomeOutlined /></div>
-              <Text style={{ fontSize: 12.25, textAlign: "center", lineHeight: "1.5" }}>Yes, I have the address</Text>
+            {/* Horizontal option rows */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+              {[
+                { key: "has-address", icon: <HomeOutlined />, label: "Yes — I have the address", sub: "Look up property data automatically" },
+                { key: "manual", icon: <FileTextOutlined />, label: "Yes — I'll enter values manually", sub: "Enter estimated home value and liens" },
+                { key: "no-property", icon: <DollarOutlined />, label: "No departing property", sub: "Cash Offer products only" },
+              ].map(opt => {
+                const active = data.departingChoice === opt.key;
+                return (
+                  <div
+                    key={opt.key}
+                    onClick={() => handleChoice(opt.key as typeof data.departingChoice)}
+                    style={{
+                      border: `2px solid ${active ? ACCENT : "#f0f0f0"}`,
+                      borderRadius: 10, padding: "12px 16px",
+                      cursor: "pointer", background: active ? "#eef4f8" : "#fff",
+                      transition: "border-color 0.15s",
+                      display: "flex", alignItems: "center", gap: 14,
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+                      background: active ? ACCENT : "#e0e8ed",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 16, color: active ? "#fff" : ACCENT,
+                    }}>
+                      {opt.icon}
+                    </div>
+                    <div>
+                      <Text style={{ fontSize: 13, fontWeight: 500, color: active ? ACCENT : "rgba(0,0,0,0.88)", display: "block", lineHeight: 1.3 }}>
+                        {opt.label}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{opt.sub}</Text>
+                    </div>
+                    {active && (
+                      <div style={{ marginLeft: "auto", width: 18, height: 18, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <RightOutlined style={{ fontSize: 9, color: "#fff" }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <div style={optionCardStyle(data.departingChoice === "manual")} onClick={() => handleChoice("manual")}>
-              <div style={iconBox}><FileTextOutlined /></div>
-              <Text style={{ fontSize: 12.25, textAlign: "center", lineHeight: "1.5" }}>
-                Yes, I&apos;ll enter numbers manually
-              </Text>
-            </div>
-            <div style={optionCardStyle(data.departingChoice === "no-property")} onClick={() => handleChoice("no-property")}>
-              <div style={iconBox}><DollarOutlined /></div>
-              <Text style={{ fontSize: 12.25, textAlign: "center", lineHeight: "1.5" }}>
-                No departing property — Cash Offer only
-              </Text>
-            </div>
+
+            {/* Address autocomplete — replaces the bottom padding when visible */}
+            {data.departingChoice === "has-address" && (
+              <>
+                <Text style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 8 }}>
+                  Departing Property Address
+                </Text>
+                <AutoComplete
+                  options={addressOptions}
+                  onSearch={fetchAddresses}
+                  onSelect={(val: string) => {
+                    setData(d => ({ ...d, departingAddress: val }));
+                    setStep("property-details");
+                  }}
+                  value={data.departingAddress}
+                  onChange={val => setData(d => ({ ...d, departingAddress: val }))}
+                  style={{ width: "100%" }}
+                >
+                  <Input
+                    prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+                    placeholder="Start typing an address…"
+                    style={{ height: 52, fontSize: 15, borderWidth: 2, borderRadius: 10 }}
+                    size="large"
+                  />
+                </AutoComplete>
+              </>
+            )}
           </div>
+        </div>
 
-          {/* Address autocomplete (shown when "has-address" selected) */}
-          {data.departingChoice === "has-address" && (
-            <div style={{ marginTop: 16 }}>
-              <Text style={{ display: "block", marginBottom: 6 }}>Departing Property Address</Text>
-              <AutoComplete
-                options={addressOptions}
-                onSearch={fetchAddresses}
-                onSelect={(val: string) => {
-                  setData(d => ({ ...d, departingAddress: val }));
-                  setStep("property-details");
-                }}
-                value={data.departingAddress}
-                onChange={val => setData(d => ({ ...d, departingAddress: val }))}
-                style={{ width: "100%" }}
-              >
-                <Input
-                  prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
-                  placeholder="Start typing an address..."
-                  size="large"
-                />
-              </AutoComplete>
-              <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: "block" }}>
-                Select an address from the dropdown to continue to Property Details.
-              </Text>
-            </div>
-          )}
-
-          {/* Next button for "manual" option */}
+        {/* Footer nav */}
+        <Flex justify="space-between" align="center" style={{ borderTop: "1px solid #f0f0f0", padding: "14px 28px" }}>
+          <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack} style={{ color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
+            Back to Pipeline
+          </Button>
           {data.departingChoice === "manual" && (
-            <Flex justify="flex-end" style={{ marginTop: 8 }}>
-              <Button
-                type="primary"
-                style={{ background: ACCENT, borderColor: ACCENT }}
-                onClick={() => setStep("property-details")}
-              >
-                Next: Property Details
-              </Button>
-            </Flex>
+            <Button
+              onClick={() => setStep("property-details")}
+              style={{
+                background: ACCENT, borderColor: ACCENT, color: "#fff",
+                height: 48, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500,
+                borderRadius: 10, boxShadow: "0px 4px 6px rgba(0,0,0,0.12)",
+              }}
+              icon={<ArrowRightOutlined />}
+              iconPosition="end"
+            >
+              Property Details
+            </Button>
           )}
-        </Card>
-      </Card>
-    </div>
+        </Flex>
+      </div>
+    </Card>
   );
 
   // ── Step 2: Property Details ─────────────────────────────────
@@ -2029,73 +2909,101 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
     const gbcValue = data.homeValue ? Math.round(data.homeValue * 0.75) : null;
     const canProceed = !!(data.homeValue && data.firstMortgage !== null);
 
-    const fieldLabel: React.CSSProperties = {
-      fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.5px",
-      color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 4,
-    };
-
     return (
       <div>
         <Card styles={{ body: { padding: 24 } }}>
           <StepHeader />
 
-          {/* Title row */}
-          <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
-            <Flex align="center" gap={10}>
-              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setStep("new-opp")} style={{ padding: "0 4px" }} />
-              {hasAddress ? (
-                <Flex align="baseline" gap={10}>
-                  <Title level={4} style={{ margin: 0 }}>{streetLine}</Title>
-                  <Text type="secondary" style={{ fontSize: 12.25 }}>{cityLine}</Text>
-                </Flex>
-              ) : (
-                <Title level={4} style={{ margin: 0 }}>Departing Property</Title>
-              )}
-            </Flex>
-            <Button
-              type="primary"
-              style={{ background: ACCENT, borderColor: ACCENT }}
-              disabled={!canProceed}
-              onClick={() => setStep("results")}
-              icon={<SearchOutlined />}
-            >
-              Calculate Scenarios
-            </Button>
-          </Flex>
+          {/* Amber warning banner */}
+          <div style={{
+            display: "flex", alignItems: "flex-start", gap: 10,
+            background: "rgba(255,238,196,0.5)", border: "1px solid #f3f4f6",
+            borderRadius: 8, padding: "10px 16px", marginBottom: 20,
+          }}>
+            <InfoCircleOutlined style={{ fontSize: 14, color: "#b45309", marginTop: 1, flexShrink: 0 }} />
+            <Text style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+              Values are pre-filled estimates from property data. Review and edit as needed.{" "}
+              <span style={{ color: "#b45309", fontWeight: 500 }}>These are not an offer.</span>
+            </Text>
+          </div>
 
-          {/* Info banner — only shown when data is pre-filled from lookup */}
-          {hasAddress && (
-            <Alert
-              type="warning"
-              showIcon
-              message="Values are pre-filled estimates from property data. Review and edit as needed. These are not an offer."
-              style={{ marginBottom: 12, fontSize: 10.5, padding: "6px 12px" }}
-            />
-          )}
-
-          {/* Main detail card */}
+          {/* Main card */}
           <Card
             loading={data.propertyLoading}
-            style={{ border: "1px solid #f0f0f0", borderRadius: 10 }}
+            style={{
+              borderRadius: 14,
+              boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)",
+              border: "none",
+            }}
             styles={{ body: { padding: 0 } }}
           >
-            {/* Property header: thumbnail + stats */}
+            {/* Flyhomes Value header */}
+            <div style={{
+              padding: "22px 28px 18px",
+              borderBottom: "1px solid #f0f0f0",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20,
+            }}>
+              <div>
+                <Text style={{
+                  fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em",
+                  color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6,
+                }}>
+                  Flyhomes Value
+                </Text>
+                <Flex align="center" gap={8}>
+                  <DollarOutlined style={{ fontSize: 28, color: ACCENT }} />
+                  <Text style={{ fontSize: 40, fontWeight: 700, color: ACCENT, lineHeight: 1 }}>
+                    {gbcValue != null ? gbcValue.toLocaleString() : "—"}
+                  </Text>
+                </Flex>
+              </div>
+              {/* Info pill */}
+              <div style={{
+                background: "rgba(224,232,237,0.3)",
+                borderRadius: 10, padding: "10px 14px",
+                display: "flex", alignItems: "flex-start", gap: 8, maxWidth: 360,
+              }}>
+                <InfoCircleOutlined style={{ fontSize: 14, color: "#364153", marginTop: 2, flexShrink: 0 }} />
+                <Text style={{ fontSize: 12, color: "#364153", lineHeight: 1.5 }}>
+                  Flyhomes uses industry leading data and proprietary algorithms to determine value. This is an estimate and not a formal offer.
+                </Text>
+              </div>
+            </div>
+
+            {/* Property row */}
             {hasAddress && (
               <div style={{
-                background: "rgba(224,232,237,0.2)", borderBottom: "1px solid #f0f0f0",
-                padding: "12px 18px", display: "flex", alignItems: "center", gap: 16,
+                padding: "18px 28px",
+                borderBottom: "1px solid #f3f4f6",
+                background: "rgba(224,232,237,0.15)",
+                display: "flex", alignItems: "center", gap: 20,
               }}>
-                {/* Thumbnail placeholder */}
+                {/* 96×96 thumbnail */}
                 <div style={{
-                  width: 70, height: 49, borderRadius: 4, flexShrink: 0,
+                  width: 96, height: 96, borderRadius: 8, flexShrink: 0,
                   background: "linear-gradient(135deg, #c8d8e0 0%, #e0e8ed 100%)",
-                  border: "1px solid #f0f0f0", display: "flex", alignItems: "center",
-                  justifyContent: "center", overflow: "hidden",
+                  border: "1px solid #e0e8ed",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <HomeOutlined style={{ fontSize: 22, color: ACCENT, opacity: 0.6 }} />
+                  <HomeOutlined style={{ fontSize: 32, color: ACCENT, opacity: 0.7 }} />
                 </div>
-                {/* Stats chips */}
-                <Flex gap={20} wrap="wrap" align="center">
+
+                {/* Address */}
+                <div style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 18, fontWeight: 600, display: "block", marginBottom: 2 }}>
+                    {streetLine || "Departing Property"}
+                  </Text>
+                  <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.45)", display: "block" }}>
+                    {cityLine || "Address on file"}
+                  </Text>
+                </div>
+
+                {/* Divider */}
+                <div style={{ width: 1, height: 64, background: "#d1d5dc", flexShrink: 0 }} />
+
+                {/* Stats — inline value + label pattern */}
+                <Flex gap={24} wrap="wrap" style={{ flexShrink: 0 }}>
                   {[
                     { label: "Beds", value: data.beds },
                     { label: "Baths", value: data.baths },
@@ -2103,129 +3011,104 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
                     { label: "Lot", value: data.lot?.toLocaleString() },
                     { label: "Built", value: data.yearBuilt },
                   ].map(stat => stat.value != null && (
-                    <Flex key={stat.label} align="center" gap={4}>
-                      <Text type="secondary" style={{ fontSize: 10.5 }}>{stat.label}</Text>
-                      <Text style={{ fontSize: 12.25 }}>{stat.value}</Text>
-                    </Flex>
+                    <div key={stat.label}>
+                      <Text style={{ fontSize: 20, fontWeight: 600, color: "#101828" }}>
+                        {stat.value}{" "}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: "#6a7282" }}>
+                        {stat.label}
+                      </Text>
+                    </div>
                   ))}
                 </Flex>
               </div>
             )}
 
-            {/* Financial fields */}
-            <div style={{ padding: "18px 18px 0" }}>
-              <Flex gap={48}>
-                {/* Left: Departing Property Values */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: 14 }}>
-                    <Text style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(0,0,0,0.45)" }}>
-                      Departing Property Values{" "}
-                      <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.25)" }}>
-                        {hasAddress ? "(Estimate — review and edit)" : ""}
-                      </Text>
-                    </Text>
-                  </div>
-                  <Flex gap={12} wrap="wrap">
-                    {/* Departing Value */}
-                    <div style={{ minWidth: 160 }}>
-                      <Text style={fieldLabel}>Departing Value</Text>
-                      <InputNumber
-                        prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.45)", fontSize: 12 }} />}
-                        placeholder="0"
-                        formatter={numFormatter}
-                        parser={numParser}
-                        value={data.homeValue}
-                        onChange={v => setData(d => ({ ...d, homeValue: v as number | null }))}
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-                    {/* Est. 1st Mortgage */}
-                    <div style={{ minWidth: 160 }}>
-                      <Text style={fieldLabel}>Est. 1st Mortgage</Text>
-                      <InputNumber
-                        prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.45)", fontSize: 12 }} />}
-                        placeholder="0"
-                        formatter={numFormatter}
-                        parser={numParser}
-                        value={data.firstMortgage}
-                        onChange={v => setData(d => ({ ...d, firstMortgage: v as number | null }))}
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-                    {/* Est. 2nd Lien */}
-                    <div style={{ minWidth: 160 }}>
-                      <Text style={fieldLabel}>Est. 2nd Lien</Text>
-                      <InputNumber
-                        prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.45)", fontSize: 12 }} />}
-                        placeholder="0"
-                        formatter={numFormatter}
-                        parser={numParser}
-                        value={data.secondLien}
-                        onChange={v => setData(d => ({ ...d, secondLien: v as number | null }))}
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-                    {/* Est. GBC Value — computed, read-only */}
-                    <div style={{ minWidth: 160 }}>
-                      <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
-                        <Text style={fieldLabel}>Est. GBC Value</Text>
-                        <LockOutlined style={{ fontSize: 10, color: "rgba(0,0,0,0.3)" }} />
-                      </Flex>
-                      <div style={{
-                        background: "rgba(224,232,237,0.4)", border: "1px solid rgba(240,240,240,0.5)",
-                        borderRadius: 6, padding: "5px 10px 5px 24px", position: "relative",
-                        minHeight: 32,
-                      }}>
-                        <DollarOutlined style={{ position: "absolute", left: 9, top: 8, fontSize: 12, color: "rgba(0,0,0,0.45)" }} />
-                        <Text style={{ fontSize: 12.25, color: "rgba(0,0,0,0.45)" }}>
-                          {gbcValue != null ? gbcValue.toLocaleString() : "—"}
-                        </Text>
-                      </div>
-                      <Text type="secondary" style={{ fontSize: 10, display: "block", marginTop: 2 }}>
-                        75% of departing value — not an offer
-                      </Text>
-                    </div>
-                  </Flex>
+            {/* 3-column large input fields */}
+            <div style={{ padding: "24px 28px 20px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                {/* 1st Lien */}
+                <div>
+                  <Text style={{
+                    fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                    color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+                  }}>
+                    1st Lien Mortgage Balance
+                  </Text>
+                  <InputNumber
+                    prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.35)" }} />}
+                    placeholder="210,000"
+                    formatter={numFormatter}
+                    parser={numParser}
+                    value={data.firstMortgage}
+                    onChange={v => setData(d => ({ ...d, firstMortgage: v as number | null }))}
+                    style={{ width: "100%", height: 64, fontSize: 18, borderWidth: 2, borderRadius: 10 }}
+                    size="large"
+                  />
                 </div>
 
-                {/* Right: New Purchase */}
-                <div style={{ width: 220, flexShrink: 0 }}>
-                  <Text style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 14 }}>
-                    New Purchase
+                {/* 2nd Lien */}
+                <div>
+                  <Text style={{
+                    fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                    color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+                  }}>
+                    2nd Lien Balance
+                  </Text>
+                  <InputNumber
+                    prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.35)" }} />}
+                    placeholder="0"
+                    formatter={numFormatter}
+                    parser={numParser}
+                    value={data.secondLien}
+                    onChange={v => setData(d => ({ ...d, secondLien: v as number | null }))}
+                    style={{ width: "100%", height: 64, fontSize: 18, borderWidth: 2, borderRadius: 10 }}
+                    size="large"
+                  />
+                </div>
+
+                {/* Purchase Price — read-only */}
+                <div>
+                  <Text style={{
+                    fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                    color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+                  }}>
+                    Purchase Price
                   </Text>
                   <div style={{
-                    background: "rgba(224,232,237,0.3)", border: "1px solid #e0e8ed",
-                    borderRadius: 6, padding: "14px 14px 12px",
+                    height: 64, borderRadius: 10, border: "2px solid #f0f0f0",
+                    background: "#fafafa", display: "flex", alignItems: "center",
+                    padding: "0 14px", gap: 8,
                   }}>
-                    <Text style={fieldLabel}>Est. Purchase Price</Text>
-                    <Flex align="center" gap={6} style={{ marginTop: 8 }}>
-                      <DollarOutlined style={{ fontSize: 17, color: "rgba(0,0,0,0.45)" }} />
-                      <Text style={{ fontSize: 17.5, color: "rgba(0,0,0,0.45)", fontWeight: 400 }}>
-                        {data.purchasePrice ? data.purchasePrice.toLocaleString() : "—"}
-                      </Text>
-                    </Flex>
+                    <DollarOutlined style={{ color: "rgba(0,0,0,0.35)", fontSize: 16 }} />
+                    <Text style={{ fontSize: 18, color: "rgba(0,0,0,0.65)", fontWeight: 500 }}>
+                      {data.purchasePrice ? data.purchasePrice.toLocaleString() : "—"}
+                    </Text>
                   </div>
+                  <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.27)", display: "block", marginTop: 4 }}>
+                    Set in previous step
+                  </Text>
                 </div>
-              </Flex>
+              </div>
             </div>
 
-            {/* Footer row */}
-            <Flex
-              justify="space-between" align="center"
-              style={{
-                borderTop: "1px solid #f0f0f0", marginTop: 18,
-                padding: "12px 18px", background: "rgba(224,232,237,0.15)",
-              }}
-            >
-              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setStep("new-opp")}>
+            {/* Footer nav */}
+            <Flex justify="space-between" align="center" style={{ borderTop: "1px solid #f0f0f0", padding: "16px 28px" }}>
+              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setStep("new-opp")} style={{ color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
                 Back
               </Button>
               <Button
-                type="primary"
-                style={{ background: ACCENT, borderColor: ACCENT }}
                 disabled={!canProceed}
                 onClick={() => setStep("results")}
-                icon={<SearchOutlined />}
+                style={{
+                  background: canProceed ? ACCENT : undefined,
+                  borderColor: canProceed ? ACCENT : undefined,
+                  color: canProceed ? "#fff" : undefined,
+                  height: 48, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500,
+                  borderRadius: 10, boxShadow: canProceed ? "0px 4px 6px rgba(0,0,0,0.12)" : "none",
+                }}
+                icon={<ArrowRightOutlined />}
+                iconPosition="end"
               >
                 Calculate Scenarios
               </Button>
@@ -2248,16 +3131,32 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
   const dv = data.homeValue ?? 0;
   const fm = data.firstMortgage ?? 0;
 
-  // Product calculation helpers
-  const ie_requested = Math.round(pp * 0.75);
-  const co_requested = Math.round(pp * 0.70);
-  const cc_requested = Math.round(pp * 0.75);
-  const combo_cashPortion = Math.round(pp * 0.65);
-  const combo_equityPortion = Math.round(dv * 0.65);
-  const combo_maxLoan = combo_cashPortion + combo_equityPortion;
+  // ── Product computations ─────────────────────────────────────────────────
+  const ieMaxLoan   = Math.round(pp * 0.75);
+  const bbysMaxLoan = Math.round(pp * 0.70);
+  const fhcoMaxLoan = Math.round(pp * 0.75);
+  const ccMaxLoan   = Math.round((pp + dv) * 0.80);
+
+  const ieOrig   = Math.round(ieMaxLoan   * 0.020);
+  const bbysOrig = Math.round(bbysMaxLoan * 0.015);
+  const fhcoOrig = Math.round(fhcoMaxLoan * 0.0175);
+  const ccOrig   = Math.round(ccMaxLoan   * 0.015);
+
+  // Combo: 60% IE / 40% BBYS
+  const comboIeSplit   = 0.60;
+  const comboBbysSplit = 0.40;
+  const comboIeAmt     = Math.round(ieMaxLoan   * comboIeSplit);
+  const comboBbysAmt   = Math.round(bbysMaxLoan * comboBbysSplit);
+  const comboIeOrig    = Math.round(comboIeAmt   * 0.020);
+  const comboBbysOrig  = Math.round(comboBbysAmt * 0.015);
+  const comboTotal     = comboIeAmt + comboBbysAmt;
+  const comboTotalOrig = comboIeOrig + comboBbysOrig;
+
+  // GBC
+  const gbcContractFee = Math.round(pp * 0.01);
 
   interface ProductDef {
-    key: string; name: string; iconType: string;
+    key: string; name: string; tagline: string; iconType: string;
     eligible: boolean; ineligibilityReason?: string; howToQualify?: string;
     metrics: { label: string; value: string }[];
   }
@@ -2265,74 +3164,91 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
   const productDefs: ProductDef[] = [
     {
       key: "instant-equity",
-      name: "Instant Equity (1st lien)",
+      name: "Instant Equity",
+      tagline: "1st lien bridge loan",
       iconType: "home",
       eligible: hasDepProperty && dv > 0 && (dv - totalLiens) > 0 && ltvRatio < 0.80,
       ineligibilityReason: !hasDepProperty
-        ? "A departing property is required. Instant Equity is a loan secured against your current home's equity."
+        ? "A departing property is required. Instant Equity is secured against your current home's equity."
         : ltvRatio >= 0.80
           ? `Current LTV is ${Math.round(ltvRatio * 100)}%, exceeding the 80% program maximum.`
           : "Insufficient equity in the departing property.",
       howToQualify: !hasDepProperty
-        ? "Go back to Step 1 and add a departing property address to unlock this option."
+        ? "Go back to Step 1 and add a departing property address."
         : "Reduce total liens or increase the estimated home value to bring LTV below 80%.",
       metrics: [
-        { label: "Max Loan", value: fmt(pp * 0.90) },
-        { label: "Payoff", value: "N/A" },
-        { label: "Max Net", value: fmt(pp * 0.90) },
-        { label: "Requested", value: `${fmt(ie_requested)} (75%)` },
-        { label: "Origination (2%)", value: fmt(ie_requested * 0.02) },
+        { label: `Max Loan (75% LTV)`, value: fmt(ieMaxLoan) },
+        { label: "Origination (2%)", value: fmt(ieOrig) },
         { label: "GBC Fee", value: "$5,000" },
+        { label: "Total Est. Cost", value: fmt(ieOrig + 5000) },
       ],
     },
     {
-      key: "cash-offer",
-      name: "Cash Offer",
+      key: "bbys-cash-offer",
+      name: "BBYS Cash Offer",
+      tagline: "Buy before you sell",
+      iconType: "swap",
+      eligible: true,
+      metrics: [
+        { label: "Max Loan (70% LTV)", value: fmt(bbysMaxLoan) },
+        { label: "Origination (1.5%)", value: fmt(bbysOrig) },
+        { label: "GBC Fee", value: "$5,000" },
+        { label: "Total Est. Cost", value: fmt(bbysOrig + 5000) },
+      ],
+    },
+    {
+      key: "fh-cash-offer",
+      name: "Flyhomes Cash Offer",
+      tagline: "All-cash purchase offer",
       iconType: "dollar",
       eligible: true,
       metrics: [
-        { label: "Max Loan", value: fmt(pp * 0.75) },
-        { label: "Payoff", value: "N/A" },
-        { label: "Max Net", value: fmt(pp * 0.75) },
-        { label: "Requested", value: `${fmt(co_requested)} (70%)` },
-        { label: "Origination (1.5%)", value: fmt(co_requested * 0.015) },
+        { label: "Max Loan (75% LTV)", value: fmt(fhcoMaxLoan) },
+        { label: "Origination (1.75%)", value: fmt(fhcoOrig) },
         { label: "GBC Fee", value: "$5,000" },
+        { label: "Total Est. Cost", value: fmt(fhcoOrig + 5000) },
       ],
     },
     {
       key: "cross-collateral",
       name: "Cross Collateral",
+      tagline: "Both properties as collateral",
       iconType: "link",
       eligible: hasDepProperty && dv > 0,
       ineligibilityReason: "A departing property with a known value is required. Cross Collateral uses both homes as security.",
       howToQualify: "Go back to Step 1 and add a departing property to unlock this option.",
       metrics: [
-        { label: "Max Loan", value: fmt(pp * 0.80) },
-        { label: "Payoff", value: "N/A" },
-        { label: "Max Net", value: fmt(pp * 0.80) },
-        { label: "Requested", value: `${fmt(cc_requested)} (75%)` },
-        { label: "Origination (1.5%)", value: fmt(cc_requested * 0.015) },
+        { label: "Max Loan (80% LTV)", value: fmt(ccMaxLoan) },
+        { label: "Origination (1.5%)", value: fmt(ccOrig) },
         { label: "GBC Fee", value: "—" },
+        { label: "Total Est. Cost", value: fmt(ccOrig) },
       ],
     },
     {
       key: "combo",
-      name: "Instant Equity + Cash Offer Combo",
+      name: "IE + BBYS Cash Offer",
+      tagline: "Combined product · split structure",
       iconType: "combo",
       eligible: hasDepProperty && dv > 0 && (dv - totalLiens) > 0,
       ineligibilityReason: !hasDepProperty
-        ? "A departing property is required for the Instant Equity component of this combo."
+        ? "A departing property is required for the Instant Equity component."
         : "Insufficient equity in the departing property for the equity advance component.",
       howToQualify: !hasDepProperty
         ? "Go back to Step 1 and add a departing property address."
         : "Reduce total liens or increase the estimated home value to build equity.",
+      metrics: [],
+    },
+    {
+      key: "gbc",
+      name: "Guaranteed Backup Contract",
+      tagline: "Certainty for seller and buyer",
+      iconType: "contract",
+      eligible: true,
       metrics: [
-        { label: "Max Loan", value: fmt(combo_maxLoan) },
-        { label: "Payoff", value: fmt(fm) },
-        { label: "Max Net", value: fmt(combo_maxLoan - fm) },
-        { label: "Requested", value: `${fmt(combo_cashPortion)} (65%)` },
-        { label: "Origination (1.75%)", value: fmt(combo_cashPortion * 0.0175) },
-        { label: "GBC Fee", value: "$7,500" },
+        { label: "Purchase Price", value: fmt(pp) },
+        { label: "Contract Fee (1%)", value: fmt(gbcContractFee) },
+        { label: "Close Certainty", value: "Guaranteed" },
+        { label: "Listing Required", value: "Yes" },
       ],
     },
   ];
@@ -2344,10 +3260,12 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
 
   function ProductIcon({ type, eligible }: { type: string; eligible: boolean }) {
     const color = eligible ? ACCENT : "rgba(0,0,0,0.25)";
-    const s = { fontSize: 20, color };
+    const s = { fontSize: 15, color };
     if (type === "home") return <HomeOutlined style={s} />;
+    if (type === "swap") return <SwapOutlined style={s} />;
     if (type === "dollar") return <DollarOutlined style={s} />;
     if (type === "link") return <LinkOutlined style={s} />;
+    if (type === "contract") return <FileTextOutlined style={s} />;
     return <AppstoreOutlined style={s} />;
   }
 
@@ -2365,7 +3283,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
               style={{ padding: "0 4px" }}
             />
             <Title level={4} style={{ margin: 0 }}>
-              Opportunity{streetLine3 ? ` — ${streetLine3}` : ""}
+              Scenario{streetLine3 ? ` — ${streetLine3}` : ""}
             </Title>
           </Flex>
           <Space>
@@ -2429,88 +3347,426 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
           </Flex>
         </Card>
 
-        {/* 4-column product grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 16 }}>
-          {productDefs.map(p => (
-            <div
-              key={p.key}
-              style={{
-                border: "1px solid #f0f0f0", borderRadius: 10,
+        {/* 3 × 2 product grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 16 }}>
+          {productDefs.map(p => {
+
+            // ── Card 5: IE + BBYS Combo ──────────────────────────────
+            if (p.key === "combo") return (
+              <div key={p.key} style={{
+                border: p.eligible ? "1px solid #c8dae3" : "1px solid #f0f0f0",
+                borderRadius: 10,
                 background: p.eligible ? "#fff" : "#fafafa",
                 display: "flex", flexDirection: "column", overflow: "hidden",
-              }}
+              }}>
+                <div style={{ height: 4, display: "flex" }}>
+                  <div style={{ flex: 0.6, background: p.eligible ? ACCENT : "#d9d9d9" }} />
+                  <div style={{ flex: 0.4, background: p.eligible ? "#7db4cc" : "#e8e8e8" }} />
+                </div>
+                <div style={{ padding: "14px 18px 12px" }}>
+                  <Flex align="center" gap={10}>
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      <div style={{
+                        width: 26, height: 26, borderRadius: 6,
+                        background: p.eligible ? "rgba(76,121,148,0.1)" : "#ececec",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <HomeOutlined style={{ fontSize: 12, color: p.eligible ? ACCENT : "rgba(0,0,0,0.25)" }} />
+                      </div>
+                      <div style={{
+                        width: 26, height: 26, borderRadius: 6,
+                        background: p.eligible ? "rgba(76,121,148,0.07)" : "#ececec",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <SwapOutlined style={{ fontSize: 12, color: p.eligible ? ACCENT : "rgba(0,0,0,0.25)" }} />
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Flex align="center" gap={6} wrap="wrap">
+                        <Text style={{ fontSize: 13, fontWeight: 600, color: p.eligible ? "rgba(0,0,0,0.88)" : "rgba(0,0,0,0.4)" }}>
+                          {p.name}
+                        </Text>
+                        {!p.eligible && <Tag style={{ fontSize: 10 }}>Not eligible</Tag>}
+                      </Flex>
+                      <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{p.tagline}</Text>
+                    </div>
+                  </Flex>
+                </div>
+                <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
+                <div style={{ padding: "14px 18px", flex: 1 }}>
+                  {p.eligible ? (
+                    <div>
+                      <div style={{ background: "rgba(76,121,148,0.05)", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                        <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
+                          <Text style={{ ...metricLabel, color: ACCENT, fontWeight: 600 }}>
+                            Instant Equity · {Math.round(comboIeSplit * 100)}%
+                          </Text>
+                          <Text style={{ fontSize: 12, fontWeight: 600, color: ACCENT }}>{fmt(comboIeAmt)}</Text>
+                        </Flex>
+                        <Flex justify="space-between" align="center">
+                          <Text style={metricLabel}>Origination (2%)</Text>
+                          <Text style={{ fontSize: 11 }}>{fmt(comboIeOrig)}</Text>
+                        </Flex>
+                      </div>
+                      <div style={{ background: "rgba(125,180,204,0.07)", borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
+                        <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
+                          <Text style={{ ...metricLabel, color: ACCENT, fontWeight: 600 }}>
+                            BBYS Cash Offer · {Math.round(comboBbysSplit * 100)}%
+                          </Text>
+                          <Text style={{ fontSize: 12, fontWeight: 600, color: ACCENT }}>{fmt(comboBbysAmt)}</Text>
+                        </Flex>
+                        <Flex justify="space-between" align="center">
+                          <Text style={metricLabel}>Origination (1.5%)</Text>
+                          <Text style={{ fontSize: 11 }}>{fmt(comboBbysOrig)}</Text>
+                        </Flex>
+                      </div>
+                      <div style={{ height: 1, background: "#f0f0f0", marginBottom: 10 }} />
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 5 }}>
+                        <Text style={metricLabel}>Combined Loan</Text>
+                        <Text style={{ fontSize: 13, fontWeight: 700 }}>{fmt(comboTotal)}</Text>
+                      </Flex>
+                      <Flex justify="space-between" align="center">
+                        <Text style={metricLabel}>Total Origination</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 500 }}>{fmt(comboTotalOrig)}</Text>
+                      </Flex>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ background: "#fff7e6", borderRadius: 4, padding: "8px 10px", marginBottom: 10, border: "1px solid #ffd591" }}>
+                        <Text style={{ fontSize: 11, color: "#d46b08", lineHeight: "1.5", display: "block" }}>{p.ineligibilityReason}</Text>
+                      </div>
+                      {p.howToQualify && (
+                        <div style={{ background: "#f5f5f5", borderRadius: 4, padding: "8px 10px" }}>
+                          <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.55)", lineHeight: "1.5", display: "block" }}>
+                            <strong>How to qualify:</strong> {p.howToQualify}
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
+                <div style={{ padding: "12px 18px", display: "flex", gap: 8 }}>
+                  <Button
+                    style={{ flex: 1 }}
+                    disabled={!p.eligible}
+                    onClick={() => p.eligible && setNumbersModal(p.key)}
+                  >
+                    View Numbers
+                  </Button>
+                  <Button
+                    type="primary"
+                    style={{ flex: 1, background: p.eligible ? ACCENT : undefined, borderColor: p.eligible ? ACCENT : undefined }}
+                    disabled={!p.eligible}
+                  >
+                    Start Loan
+                  </Button>
+                </div>
+              </div>
+            );
+
+            // ── Card 6: Guaranteed Backup Contract ────────────────────
+            if (p.key === "gbc") return (
+              <div key={p.key} style={{
+                background: "linear-gradient(145deg, #fdf8f0 0%, #fef6e8 100%)",
+                border: "1px solid #e8d5b0",
+                borderRadius: 10,
+                display: "flex", flexDirection: "column", overflow: "hidden",
+              }}>
+                <div style={{ height: 4, background: "linear-gradient(90deg, #c98a2e 0%, #e0a84a 100%)" }} />
+                <div style={{ padding: "14px 18px 12px" }}>
+                  <Flex align="center" gap={10}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 6, flexShrink: 0,
+                      background: "rgba(201,138,46,0.12)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <FileTextOutlined style={{ fontSize: 15, color: "#c98a2e" }} />
+                    </div>
+                    <div>
+                      <Text style={{ fontSize: 13, fontWeight: 600, color: "rgba(0,0,0,0.88)", display: "block" }}>{p.name}</Text>
+                      <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{p.tagline}</Text>
+                    </div>
+                  </Flex>
+                </div>
+                <div style={{ height: 1, background: "#e8d5b0", margin: "0 18px" }} />
+                <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 8.75 }}>
+                  {p.metrics.map(m => (
+                    <Flex key={m.label} justify="space-between" align="baseline">
+                      <Text style={metricLabel}>{m.label}</Text>
+                      <Text style={{ fontSize: 12.25 }}>{m.value}</Text>
+                    </Flex>
+                  ))}
+                  <div style={{
+                    marginTop: 4, background: "rgba(201,138,46,0.08)",
+                    border: "1px solid rgba(201,138,46,0.2)",
+                    borderRadius: 6, padding: "8px 10px",
+                  }}>
+                    <Text style={{ fontSize: 10.5, color: "#92611a", lineHeight: "1.5" }}>
+                      Flyhomes backs the offer with a guarantee, giving the seller confidence to accept — even if financing falls through.
+                    </Text>
+                  </div>
+                </div>
+                <div style={{ height: 1, background: "#e8d5b0", margin: "0 18px" }} />
+                <div style={{ padding: "14px 18px" }}>
+                  <Button type="primary" style={{ width: "100%", background: "#c98a2e", borderColor: "#c98a2e" }}>
+                    Request Offer
+                  </Button>
+                </div>
+              </div>
+            );
+
+            // ── Cards 1–4: standard products ──────────────────────────
+            return (
+              <div
+                key={p.key}
+                style={{
+                  border: "1px solid #f0f0f0", borderRadius: 10,
+                  background: p.eligible ? "#fff" : "#fafafa",
+                  display: "flex", flexDirection: "column", overflow: "hidden",
+                }}
+              >
+                <div style={{ height: 4, background: p.eligible ? ACCENT : "#d9d9d9" }} />
+                <div style={{ padding: "14px 18px 12px" }}>
+                  <Flex align="center" gap={10}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 6, flexShrink: 0,
+                      background: p.eligible ? "#e0e8ed" : "#ececec",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <ProductIcon type={p.iconType} eligible={p.eligible} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Flex align="center" gap={6} wrap="wrap">
+                        <Text style={{ fontSize: 13, fontWeight: 600, color: p.eligible ? "rgba(0,0,0,0.88)" : "rgba(0,0,0,0.4)" }}>
+                          {p.name}
+                        </Text>
+                        {!p.eligible && <Tag style={{ fontSize: 10 }}>Not eligible</Tag>}
+                      </Flex>
+                      <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{p.tagline}</Text>
+                    </div>
+                  </Flex>
+                </div>
+                <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
+                <div style={{ padding: "14px 18px", flex: 1 }}>
+                  {p.eligible ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8.75 }}>
+                      {p.metrics.map(m => (
+                        <Flex key={m.label} justify="space-between" align="baseline">
+                          <Text style={metricLabel}>{m.label}</Text>
+                          <Text style={{ fontSize: 12.25 }}>{m.value}</Text>
+                        </Flex>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ background: "#fff7e6", borderRadius: 4, padding: "8px 10px", marginBottom: 10, border: "1px solid #ffd591" }}>
+                        <Text style={{ fontSize: 11, color: "#d46b08", lineHeight: "1.5", display: "block" }}>{p.ineligibilityReason}</Text>
+                      </div>
+                      {p.howToQualify && (
+                        <div style={{ background: "#f5f5f5", borderRadius: 4, padding: "8px 10px" }}>
+                          <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.55)", lineHeight: "1.5", display: "block" }}>
+                            <strong>How to qualify:</strong> {p.howToQualify}
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
+                <div style={{ padding: "12px 18px", display: "flex", gap: 8 }}>
+                  <Button
+                    style={{ flex: 1 }}
+                    disabled={!p.eligible}
+                    onClick={() => p.eligible && setNumbersModal(p.key)}
+                  >
+                    View Numbers
+                  </Button>
+                  <Button
+                    type="primary"
+                    style={{
+                      flex: 1,
+                      background: p.eligible ? ACCENT : undefined,
+                      borderColor: p.eligible ? ACCENT : undefined,
+                    }}
+                    disabled={!p.eligible}
+                  >
+                    Start Loan
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* View Numbers modal */}
+        {(() => {
+          const p = productDefs.find(x => x.key === numbersModal);
+          if (!p) return null;
+          const fmtPct = (n: number) => `${n}%`;
+
+          type CalcRow = { label: string; value: string; sub?: string; highlight?: boolean; divider?: boolean };
+          let rows: CalcRow[] = [];
+          let guidelineSummary = "";
+          let guidelineLink = "#";
+
+          if (p.key === "instant-equity") {
+            rows = [
+              { label: "Purchase Price", value: fmt(pp) },
+              { label: "Max LTV", value: fmtPct(75) },
+              { label: "Max Loan Amount", value: fmt(ieMaxLoan), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "Origination Fee", value: `${fmt(ieOrig)}`, sub: "2% of loan amount" },
+              { label: "GBC Processing Fee", value: "$5,000" },
+              { label: "Total Est. Fees", value: fmt(ieOrig + 5000), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "Departing Home Value", value: dv > 0 ? fmt(dv) : "—" },
+              { label: "1st Mortgage Balance", value: fm > 0 ? fmt(fm) : "—" },
+              { label: "Available Equity", value: dv > 0 ? fmt(Math.max(0, dv - fm)) : "—", sub: "Home value minus liens" },
+            ];
+            guidelineSummary = "Instant Equity is a 1st lien bridge loan secured against the departing home. Max LTV 75%. Requires a departing property with sufficient equity. FICO 680+. Available in select states.";
+            guidelineLink = "#";
+          } else if (p.key === "bbys-cash-offer") {
+            rows = [
+              { label: "Purchase Price", value: fmt(pp) },
+              { label: "Max LTV", value: fmtPct(70) },
+              { label: "Max Loan Amount", value: fmt(bbysMaxLoan), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "Origination Fee", value: fmt(bbysOrig), sub: "1.5% of loan amount" },
+              { label: "GBC Processing Fee", value: "$5,000" },
+              { label: "Total Est. Fees", value: fmt(bbysOrig + 5000), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "How It Works", value: "", sub: "Flyhomes purchases the new home with cash, then the borrower buys it back with traditional financing after their current home sells." },
+            ];
+            guidelineSummary = "BBYS Cash Offer lets borrowers buy before they sell by using Flyhomes cash. Requires a departing property listed for sale within 90 days. FICO 700+.";
+            guidelineLink = "#";
+          } else if (p.key === "fh-cash-offer") {
+            rows = [
+              { label: "Purchase Price", value: fmt(pp) },
+              { label: "Max LTV", value: fmtPct(75) },
+              { label: "Max Loan Amount", value: fmt(fhcoMaxLoan), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "Origination Fee", value: fmt(fhcoOrig), sub: "1.75% of loan amount" },
+              { label: "GBC Processing Fee", value: "$5,000" },
+              { label: "Total Est. Fees", value: fmt(fhcoOrig + 5000), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "How It Works", value: "", sub: "Flyhomes makes an all-cash offer on behalf of the borrower, giving them a competitive edge. Borrower then finances the purchase traditionally." },
+            ];
+            guidelineSummary = "Flyhomes Cash Offer is available to any qualified buyer regardless of whether they have a departing property. FICO 680+. Available in select markets.";
+            guidelineLink = "#";
+          } else if (p.key === "cross-collateral") {
+            rows = [
+              { label: "Purchase Price", value: fmt(pp) },
+              { label: "Departing Home Value", value: dv > 0 ? fmt(dv) : "—" },
+              { label: "Combined Collateral", value: dv > 0 ? fmt(pp + dv) : "—", sub: "Both properties secure the loan" },
+              { label: "Max LTV", value: fmtPct(80) },
+              { label: "Max Loan Amount", value: fmt(ccMaxLoan), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "Origination Fee", value: fmt(ccOrig), sub: "1.5% of loan amount" },
+              { label: "GBC Processing Fee", value: "—" },
+              { label: "Total Est. Fees", value: fmt(ccOrig), highlight: true },
+              { divider: true, label: "", value: "" },
+              { label: "1st Mortgage Balance", value: fm > 0 ? fmt(fm) : "—" },
+              { label: "Net After Payoff", value: dv > 0 && fm > 0 ? fmt(ccMaxLoan - fm) : "—" },
+            ];
+            guidelineSummary = "Cross Collateral uses both the departing and new property as loan collateral, enabling higher LTV without PMI. Both properties must be free and clear or have minimal liens.";
+            guidelineLink = "#";
+          } else if (p.key === "combo") {
+            rows = [
+              { label: "Instant Equity Portion", value: `${Math.round(comboIeSplit * 100)}% · ${fmt(comboIeAmt)}`, sub: "Secured against departing home equity" },
+              { label: "IE Origination (2%)", value: fmt(comboIeOrig) },
+              { divider: true, label: "", value: "" },
+              { label: "BBYS Cash Offer Portion", value: `${Math.round(comboBbysSplit * 100)}% · ${fmt(comboBbysAmt)}`, sub: "Cash purchase of new home" },
+              { label: "BBYS Origination (1.5%)", value: fmt(comboBbysOrig) },
+              { divider: true, label: "", value: "" },
+              { label: "Combined Loan Total", value: fmt(comboTotal), highlight: true },
+              { label: "Combined Origination", value: fmt(comboTotalOrig), highlight: true },
+              { label: "GBC Processing Fee", value: "$7,500" },
+              { label: "Total Est. Fees", value: fmt(comboTotalOrig + 7500), highlight: true },
+            ];
+            guidelineSummary = "The IE + BBYS Combo combines two products for maximum purchasing power. Borrower must qualify for both programs independently. Departing property required with sufficient equity.";
+            guidelineLink = "#";
+          }
+
+          return (
+            <Modal
+              open={numbersModal !== null}
+              onCancel={() => setNumbersModal(null)}
+              title={null}
+              footer={null}
+              width={520}
+              centered
+              styles={{ body: { padding: 0 } }}
             >
               {/* Header */}
-              <div style={{ padding: "18px 18px 14px" }}>
-                <div style={{
-                  width: 42, height: 42, borderRadius: 6,
-                  background: p.eligible ? "#e0e8ed" : "#ececec",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 14,
-                }}>
-                  <ProductIcon type={p.iconType} eligible={p.eligible} />
-                </div>
-                <Flex align="center" gap={8} wrap="wrap">
-                  <Text style={{ fontSize: 14, color: p.eligible ? "rgba(0,0,0,0.88)" : "rgba(0,0,0,0.4)" }}>
-                    {p.name}
-                  </Text>
-                  {!p.eligible && <Tag style={{ fontSize: 10 }}>Not eligible</Tag>}
-                </Flex>
+              <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f0f0f0" }}>
+                <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 4 }}>
+                  Run the Numbers
+                </Text>
+                <Text style={{ fontSize: 20, fontWeight: 700, color: "rgba(0,0,0,0.88)", display: "block" }}>{p.name}</Text>
+                <Text style={{ fontSize: 13, color: "rgba(0,0,0,0.45)" }}>{p.tagline}</Text>
               </div>
 
-              <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
-
-              {/* Metrics or ineligibility explanation */}
-              <div style={{ padding: "14px 18px", flex: 1 }}>
-                {p.eligible ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8.75 }}>
-                    {p.metrics.map(m => (
-                      <Flex key={m.label} justify="space-between" align="baseline">
-                        <Text style={metricLabel}>{m.label}</Text>
-                        <Text style={{ fontSize: 12.25 }}>{m.value}</Text>
-                      </Flex>
-                    ))}
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{
-                      background: "#fff7e6", borderRadius: 4, padding: "8px 10px", marginBottom: 10,
-                      border: "1px solid #ffd591",
-                    }}>
-                      <Text style={{ fontSize: 11, color: "#d46b08", lineHeight: "1.5", display: "block" }}>
-                        {p.ineligibilityReason}
-                      </Text>
-                    </div>
-                    {p.howToQualify && (
-                      <div style={{ background: "#f5f5f5", borderRadius: 4, padding: "8px 10px" }}>
-                        <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.55)", lineHeight: "1.5", display: "block" }}>
-                          <strong>How to qualify:</strong> {p.howToQualify}
+              {/* Calculations */}
+              <div style={{ padding: "16px 24px", borderBottom: "1px solid #f0f0f0" }}>
+                {rows.map((row, i) => {
+                  if (row.divider) return <div key={i} style={{ height: 1, background: "#f5f5f5", margin: "10px 0" }} />;
+                  return (
+                    <div key={i} style={{ marginBottom: row.sub && !row.value ? 12 : 8 }}>
+                      <Flex justify="space-between" align="baseline">
+                        <Text style={{
+                          fontSize: 12, color: row.highlight ? "rgba(0,0,0,0.88)" : "rgba(0,0,0,0.5)",
+                          fontWeight: row.highlight ? 600 : 400,
+                        }}>
+                          {row.label}
                         </Text>
-                      </div>
-                    )}
-                  </div>
-                )}
+                        {row.value && (
+                          <Text style={{
+                            fontSize: row.highlight ? 15 : 13,
+                            fontWeight: row.highlight ? 700 : 500,
+                            color: row.highlight ? ACCENT : "rgba(0,0,0,0.88)",
+                          }}>
+                            {row.value}
+                          </Text>
+                        )}
+                      </Flex>
+                      {row.sub && (
+                        <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)", display: "block", marginTop: 1, lineHeight: 1.4 }}>
+                          {row.sub}
+                        </Text>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <div style={{ height: 1, background: "#f0f0f0", margin: "0 18px" }} />
+              {/* Guidelines */}
+              <div style={{ padding: "14px 24px", borderBottom: "1px solid #f0f0f0", background: "#fafafa" }}>
+                <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", display: "block", marginBottom: 6 }}>
+                  Key Guidelines
+                </Text>
+                <Text style={{ fontSize: 12.5, color: "rgba(0,0,0,0.65)", lineHeight: 1.6, display: "block", marginBottom: 8 }}>
+                  {guidelineSummary}
+                </Text>
+                <a href={guidelineLink} style={{ fontSize: 12, color: ACCENT, textDecoration: "none", fontWeight: 500 }}>
+                  View full guidelines →
+                </a>
+              </div>
 
-              {/* CTA */}
-              <div style={{ padding: "14px 18px" }}>
+              {/* Footer */}
+              <div style={{ padding: "14px 24px", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <Button onClick={() => setNumbersModal(null)}>Close</Button>
                 <Button
                   type="primary"
-                  style={{
-                    width: "100%",
-                    background: p.eligible ? ACCENT : undefined,
-                    borderColor: p.eligible ? ACCENT : undefined,
-                  }}
-                  disabled={!p.eligible}
+                  style={{ background: ACCENT, borderColor: ACCENT }}
+                  onClick={() => setNumbersModal(null)}
                 >
-                  Convert to Deal
+                  Start Loan
                 </Button>
               </div>
-            </div>
-          ))}
-        </div>
+            </Modal>
+          );
+        })()}
 
         {/* Present to Borrower modal */}
         <Modal
@@ -2669,7 +3925,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
                   <Text style={{ fontSize: 12.25, color: "rgba(0,0,0,0.45)" }}>Notes</Text>
                 </Flex>
                 <Input.TextArea
-                  placeholder="Add context for this opportunity..."
+                  placeholder="Add context for this scenario..."
                   value={data.notes}
                   onChange={e => setData(d => ({ ...d, notes: e.target.value }))}
                   rows={3}
@@ -2743,54 +3999,55 @@ function PipelineView({ profile, branding }: { profile: UserProfile; branding: B
   ];
 
   return (
-    <Card styles={{ body: { padding: "0 24px 24px" } }}>
-      {/* Toolbar */}
-      <Flex justify="space-between" align="center" style={{ padding: "16px 0 4px" }}>
+    <Card styles={{ body: { padding: 0 } }}>
+      {/* Page header */}
+      <Flex justify="space-between" align="center" style={{ padding: "16px 24px", borderBottom: "1px solid #f0f0f0" }}>
+        <Title level={4} style={{ margin: 0 }}>Pipeline</Title>
+        <Space>
+          <Button type="primary" style={{ background: ACCENT, borderColor: ACCENT }} onClick={() => setShowNewOpp(true)}>
+            New Scenario
+          </Button>
+          <Button onClick={() => {}}>Create Deal</Button>
+        </Space>
+      </Flex>
+
+      {/* Search toolbar */}
+      <div style={{ padding: "12px 24px", borderBottom: "1px solid #f0f0f0" }}>
         <Input
-          addonBefore="Search deals"
-          placeholder="Search by Deal ID, address, or borrower name..."
-          suffix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+          prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+          placeholder="Search by deal ID, address, or borrower name…"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           allowClear
-          style={{ maxWidth: 500 }}
+          style={{ maxWidth: 480 }}
         />
-        <Space>
-          <Button type="primary" style={{ background: ACCENT, borderColor: ACCENT }} onClick={() => setShowNewOpp(true)}>
-            New Opportunity
-          </Button>
-          <Button type="primary" style={{ background: ACCENT, borderColor: ACCENT }}>
-            Create Deal
-          </Button>
-        </Space>
-      </Flex>
+      </div>
 
       {/* Tabs */}
       <Tabs
         activeKey={tab}
         onChange={v => { setTab(v); setPage(1); }}
+        style={{ padding: "0 24px" }}
+        tabBarStyle={{ marginBottom: 16 }}
         items={[
           {
             key: "opportunities",
-            label: "Opportunities",
+            label: "Scenarios",
             children: (
               <div>
-                <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-                  <Title level={4} style={{ margin: 0 }}>Opportunities</Title>
-                  <Pagination
-                    current={page}
-                    pageSize={PAGE_SIZE}
-                    total={filteredOpps.length}
-                    onChange={setPage}
-                    showSizeChanger
-                    pageSizeOptions={["6", "10", "20"]}
-                    size="small"
-                  />
-                </Flex>
                 <Table
                   columns={oppCols}
                   dataSource={filteredOpps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
-                  pagination={false}
+                  pagination={{
+                    current: page,
+                    pageSize: PAGE_SIZE,
+                    total: filteredOpps.length,
+                    onChange: setPage,
+                    showSizeChanger: true,
+                    pageSizeOptions: ["6", "10", "20"],
+                    size: "small",
+                    style: { marginTop: 16 },
+                  }}
                   size="middle"
                 />
               </div>
@@ -2800,10 +4057,7 @@ function PipelineView({ profile, branding }: { profile: UserProfile; branding: B
             key: "deals",
             label: "Deals",
             children: (
-              <div>
-                <Title level={4} style={{ margin: "0 0 16px" }}>Deals</Title>
-                <Table columns={dealCols} dataSource={DEALS} pagination={false} size="middle" />
-              </div>
+              <Table columns={dealCols} dataSource={DEALS} pagination={false} size="middle" />
             ),
           },
           {
@@ -2846,36 +4100,63 @@ function ContactsView() {
     { title: "", key: "action", width: 110, render: () => <Button size="small">Follow Up</Button> },
   ];
 
+  const [contactSearch, setContactSearch] = useState("");
+
   return (
-    <Card styles={{ body: { padding: "0 24px 24px" } }}>
+    <Card styles={{ body: { padding: 0 } }}>
+      {/* Page header */}
+      <Flex justify="space-between" align="center" style={{ padding: "16px 24px", borderBottom: "1px solid #f0f0f0" }}>
+        <Title level={4} style={{ margin: 0 }}>Contacts</Title>
+        <Button type="primary" icon={<PlusOutlined />} style={{ background: ACCENT, borderColor: ACCENT }}>
+          {tab === "file-contacts" ? "Add Contact" : "Add Lead"}
+        </Button>
+      </Flex>
+
+      {/* Search toolbar */}
+      <div style={{ padding: "12px 24px", borderBottom: "1px solid #f0f0f0" }}>
+        <Input
+          prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+          placeholder={tab === "file-contacts" ? "Search contacts…" : "Search leads…"}
+          value={contactSearch}
+          onChange={e => setContactSearch(e.target.value)}
+          allowClear
+          style={{ maxWidth: 480 }}
+        />
+      </div>
+
+      {/* Tabs */}
       <Tabs
         activeKey={tab}
-        onChange={setTab}
+        onChange={v => { setTab(v); setContactSearch(""); }}
+        style={{ padding: "0 24px" }}
+        tabBarStyle={{ marginBottom: 16 }}
         items={[
           {
             key: "file-contacts",
             label: "File Contacts",
             children: (
-              <div>
-                <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-                  <Input prefix={<SearchOutlined />} placeholder="Search contacts…" style={{ maxWidth: 320 }} allowClear />
-                  <Button type="primary" icon={<PlusOutlined />} style={{ background: ACCENT, borderColor: ACCENT }}>Add Contact</Button>
-                </Flex>
-                <Table columns={fileCols} dataSource={FILE_CONTACTS} pagination={false} size="middle" />
-              </div>
+              <Table
+                columns={fileCols}
+                dataSource={FILE_CONTACTS.filter(c =>
+                  !contactSearch || c.name.toLowerCase().includes(contactSearch.toLowerCase()) || c.email.toLowerCase().includes(contactSearch.toLowerCase())
+                )}
+                pagination={false}
+                size="middle"
+              />
             ),
           },
           {
             key: "agent-leads",
             label: "Agent Leads",
             children: (
-              <div>
-                <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-                  <Input prefix={<SearchOutlined />} placeholder="Search leads…" style={{ maxWidth: 320 }} allowClear />
-                  <Button type="primary" icon={<PlusOutlined />} style={{ background: ACCENT, borderColor: ACCENT }}>Add Lead</Button>
-                </Flex>
-                <Table columns={leadCols} dataSource={AGENT_LEADS} pagination={false} size="middle" />
-              </div>
+              <Table
+                columns={leadCols}
+                dataSource={AGENT_LEADS.filter(l =>
+                  !contactSearch || l.name.toLowerCase().includes(contactSearch.toLowerCase()) || l.brokerage.toLowerCase().includes(contactSearch.toLowerCase())
+                )}
+                pagination={false}
+                size="middle"
+              />
             ),
           },
         ]}
@@ -3887,6 +5168,9 @@ function MyBrandingForm({ branding, onSave }: { branding: BrandingData; onSave: 
   const [logoFile, setLogoFile] = useState<string | null>(null);
   const [logoCrop, setLogoCrop] = useState<string | null>(branding.logoUrl);
   const [cropOpen, setCropOpen] = useState(false);
+  const [primaryColor, setPrimaryColor] = useState(branding.primaryColor);
+  const [secondaryColor, setSecondaryColor] = useState(branding.secondaryColor);
+  const [saved, setSaved] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   function handleLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -3895,6 +5179,12 @@ function MyBrandingForm({ branding, onSave }: { branding: BrandingData; onSave: 
     setLogoFile(URL.createObjectURL(file));
     setCropOpen(true);
     e.target.value = "";
+  }
+
+  function handleSave() {
+    onSave({ logoUrl: logoCrop, primaryColor, secondaryColor });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
@@ -3913,10 +5203,9 @@ function MyBrandingForm({ branding, onSave }: { branding: BrandingData; onSave: 
           <div>
             <div style={{
               display: "inline-block",
-              background: "repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 0 0 / 16px 16px",
-              borderRadius: 8, border: "1px solid #f0f0f0", padding: 12, marginBottom: 12,
+              borderRadius: 8, border: "1px solid #f0f0f0", marginBottom: 12, overflow: "hidden",
             }}>
-              <img src={logoCrop} alt="Logo" style={{ height: 64, display: "block", maxWidth: 280, objectFit: "contain" }} />
+              <img src={logoCrop} alt="Logo" style={{ height: 88, display: "block", maxWidth: 300, objectFit: "cover" }} />
             </div>
             <Flex gap={8}>
               <Button size="small" icon={<UploadOutlined />} onClick={() => logoInputRef.current?.click()}>
@@ -3945,22 +5234,49 @@ function MyBrandingForm({ branding, onSave }: { branding: BrandingData; onSave: 
       <Divider style={{ margin: "0 0 24px" }} />
 
       {/* Brand colors */}
-      <div>
-        <Text strong style={{ display: "block", marginBottom: 10 }}>Brand Colors</Text>
-        <Flex gap={24}>
-          {[
-            { label: "Primary Color", bg: "#1677ff" },
-            { label: "Secondary Color", bg: ACCENT },
-          ].map(({ label, bg }) => (
-            <div key={label}>
-              <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 6 }}>{label}</Text>
-              <div style={{ width: 48, height: 48, borderRadius: 8, background: bg, border: "1px solid #f0f0f0", cursor: "pointer" }} />
-            </div>
-          ))}
+      <div style={{ marginBottom: 28 }}>
+        <Text strong style={{ display: "block", marginBottom: 4 }}>Brand Colors</Text>
+        <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 16 }}>
+          Click a swatch to open the color picker. Enter a hex or RGB value directly, or drag the gradient.
+        </Text>
+        <Flex gap={32}>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 8 }}>Primary Color</Text>
+            <Flex align="center" gap={12}>
+              <ColorPicker
+                value={primaryColor}
+                onChangeComplete={(color) => setPrimaryColor(color.toHexString())}
+                showText
+                format="hex"
+                size="large"
+              />
+            </Flex>
+          </div>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 8 }}>Secondary Color</Text>
+            <Flex align="center" gap={12}>
+              <ColorPicker
+                value={secondaryColor}
+                onChangeComplete={(color) => setSecondaryColor(color.toHexString())}
+                showText
+                format="hex"
+                size="large"
+              />
+            </Flex>
+          </div>
         </Flex>
       </div>
 
-      <Button type="primary" style={{ background: ACCENT, borderColor: ACCENT, marginTop: 24 }} onClick={() => onSave({ ...branding, logoUrl: logoCrop })}>Save Branding</Button>
+      <Flex align="center" gap={12}>
+        <Button
+          type="primary"
+          style={{ background: ACCENT, borderColor: ACCENT }}
+          onClick={handleSave}
+        >
+          Save Branding
+        </Button>
+        {saved && <Text style={{ color: "#52c41a", fontSize: 13 }}>✓ Saved</Text>}
+      </Flex>
 
       {logoFile && (
         <LogoCropperModal
@@ -4120,7 +5436,7 @@ function getMedhaResponse(input: string): { text: string; source: string } {
   };
 
   if (q.match(/pipeline|deal|active/)) return {
-    text: "You currently have 3 active deals in your pipeline: Henderson (D-2001, Recommendation Ready), Johnson (D-2002, Under Review), and Martinez (D-2003, Processing). You also have 3 open opportunities.",
+    text: "You currently have 3 active deals in your pipeline: Henderson (D-2001, Recommendation Ready), Johnson (D-2002, Under Review), and Martinez (D-2003, Processing). You also have 3 open scenarios.",
     source: "Pipeline",
   };
 
@@ -4137,7 +5453,7 @@ const SUGGESTED_PROMPTS = [
   "Which states are available?",
 ];
 
-function MedhaDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MedhaDrawer({ open, onClose, initialQuery }: { open: boolean; onClose: () => void; initialQuery?: string }) {
   const [messages, setMessages] = useState<MedhaMsg[]>([
     {
       id: 0,
@@ -4150,10 +5466,21 @@ function MedhaDrawer({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const firedQueryRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
+
+  // Auto-send initialQuery once per open
+  useEffect(() => {
+    if (open && initialQuery && initialQuery !== firedQueryRef.current) {
+      firedQueryRef.current = initialQuery;
+      setTimeout(() => send(initialQuery), 200);
+    }
+    if (!open) firedQueryRef.current = undefined;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialQuery]);
 
   function send(text?: string) {
     const q = (text ?? input).trim();
@@ -4384,6 +5711,12 @@ export default function FullPortalNavigationPage() {
   const [section, setSection] = useState<Section>("home");
   const [notifOpen, setNotifOpen] = useState(false);
   const [medhaOpen, setMedhaOpen] = useState(false);
+  const [medhaInitQuery, setMedhaInitQuery] = useState<string | undefined>(undefined);
+
+  function openMedha(q?: string) {
+    setMedhaInitQuery(q);
+    setMedhaOpen(true);
+  }
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [branding, setBranding] = useState<BrandingData>(DEFAULT_BRANDING);
   const unread = NOTIFICATIONS.filter(n => !n.read).length;
@@ -4430,7 +5763,7 @@ export default function FullPortalNavigationPage() {
               <Flex align="center" gap={20}>
                 {/* Medha */}
                 <Button
-                  onClick={() => setMedhaOpen(true)}
+                  onClick={() => openMedha()}
                   style={{
                     background: "rgba(124,58,237,0.15)",
                     borderColor: "rgba(124,58,237,0.35)",
@@ -4461,7 +5794,7 @@ export default function FullPortalNavigationPage() {
           </Header>
 
           <Content style={{ backgroundColor: CONTENT_BG, padding: 24 }}>
-            {section === "home" && <HomeView onNavigate={setSection} />}
+            {section === "home" && <HomeView onNavigate={setSection} onOpenMedha={openMedha} />}
             {section === "pipeline" && <PipelineView profile={profile} branding={branding} />}
             {section === "contacts" && <ContactsView />}
             {section === "resources" && <ResourcesView profile={profile} branding={branding} />}
@@ -4471,7 +5804,7 @@ export default function FullPortalNavigationPage() {
       </Layout>
 
       <NotificationsDrawer open={notifOpen} onClose={() => setNotifOpen(false)} />
-      <MedhaDrawer open={medhaOpen} onClose={() => setMedhaOpen(false)} />
+      <MedhaDrawer open={medhaOpen} onClose={() => { setMedhaOpen(false); setMedhaInitQuery(undefined); }} initialQuery={medhaInitQuery} />
     </ConfigProvider>
   );
 }

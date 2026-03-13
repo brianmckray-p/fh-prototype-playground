@@ -3,15 +3,12 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Alert,
   AutoComplete,
   Button,
-  Col,
   Divider,
   Flex,
   Input,
   InputNumber,
-  Row,
   Spin,
   Typography,
 } from "antd";
@@ -460,272 +457,206 @@ export default function NewOpportunityPage() {
   // ── Step 2: Property Details ───────────────────────────────────────────────
 
   const step2 = (
-    <div>
-      {/* Page heading row */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
-        <Flex align="center" gap={10}>
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => setStep(0)}
-            style={{ color: "rgba(0,0,0,0.45)", padding: "0 4px" }}
-          />
+    <div style={{ maxWidth: 720 }}>
+      {/* Amber warning banner */}
+      <div style={{
+        display: "flex", alignItems: "flex-start", gap: 10,
+        background: "rgba(255,238,196,0.5)", border: "1px solid #f3f4f6",
+        borderRadius: 8, padding: "10px 16px", marginBottom: 20,
+      }}>
+        <InfoCircleOutlined style={{ fontSize: 14, color: "#b45309", marginTop: 1, flexShrink: 0 }} />
+        <Text style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+          Values are pre-filled estimates from property data. Review and edit as needed.{" "}
+          <span style={{ color: "#b45309", fontWeight: 500 }}>These are not an offer.</span>
+        </Text>
+      </div>
+
+      {/* Main card */}
+      <div style={{
+        backgroundColor: "#fff",
+        borderRadius: 14,
+        boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)",
+        overflow: "hidden",
+      }}>
+
+        {/* Flyhomes Value header */}
+        <div style={{
+          padding: "22px 24px 18px",
+          borderBottom: "1px solid #f0f0f0",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+        }}>
           <div>
-            <Title level={4} style={{ margin: 0, display: "inline", marginRight: 8 }}>
-              {form.addressComponents?.street_line || "Property"}
-            </Title>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {form.addressComponents
-                ? `${form.addressComponents.city}, ${form.addressComponents.state} ${form.addressComponents.zipcode}`
-                : ""}
+            <Text style={{
+              fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em",
+              color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 4,
+            }}>
+              Flyhomes Value
+            </Text>
+            <Text style={{
+              fontSize: 48, fontWeight: 700, color: "#4c7994",
+              lineHeight: 1, display: "block",
+            }}>
+              {gbcValue != null ? fmt(gbcValue) : "—"}
+            </Text>
+            <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", marginTop: 6, display: "block" }}>
+              75% of departing value · not a formal offer
             </Text>
           </div>
-        </Flex>
-        <Button
-          style={{ backgroundColor: "#4c7994", borderColor: "#4c7994", color: "#fff" }}
-          icon={<ArrowRightOutlined />}
-          iconPosition="end"
-          onClick={() => setStep(2)}
-        >
-          Calculate Scenarios
-        </Button>
-      </Flex>
+          {/* Info pill */}
+          <div style={{
+            background: "#f0f7fb", border: "1px solid #d0e4ef",
+            borderRadius: 20, padding: "6px 12px", maxWidth: 220,
+          }}>
+            <Text style={{ fontSize: 10.5, color: "#4c7994", lineHeight: 1.4 }}>
+              Flyhomes uses industry leading data and proprietary algorithms to determine value.
+            </Text>
+          </div>
+        </div>
 
-      {/* Disclaimer banner */}
-      <Alert
-        type="info"
-        icon={<InfoCircleOutlined />}
-        message="Values are pre-filled estimates from property data. Review and edit as needed. These are not an offer."
-        showIcon
-        style={{ marginBottom: 16, backgroundColor: "rgba(224,232,237,0.5)", border: "1px solid #f0f0f0", fontSize: 11 }}
-      />
-
-      {/* Property card */}
-      <div
-        style={{
-          backgroundColor: "#fff",
-          border: "1px solid #f0f0f0",
-          borderRadius: 10,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Property header: photo + stats */}
-        <div
-          style={{
-            borderBottom: "1px solid #f0f0f0",
-            backgroundColor: "rgba(224,232,237,0.2)",
-            padding: "14px 18px",
-            display: "flex",
-            alignItems: "center",
-            gap: 18,
-          }}
-        >
-          <div
-            style={{
-              width: 70,
-              height: 49,
-              borderRadius: 4,
-              border: "1px solid #f0f0f0",
-              backgroundColor: "#e0e8ed",
-              overflow: "hidden",
-              flexShrink: 0,
-            }}
-          >
-            {/* Street View placeholder */}
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                background: "linear-gradient(135deg, #c8dae3 0%, #a0bfcc 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <HomeOutlined style={{ fontSize: 20, color: "#4c7994" }} />
-            </div>
+        {/* Property row */}
+        <div style={{
+          padding: "16px 24px",
+          borderBottom: "1px solid #f0f0f0",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+        }}>
+          {/* 96×96 thumbnail */}
+          <div style={{
+            width: 96, height: 96, borderRadius: 8,
+            border: "1px solid #e0e8ed",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+            overflow: "hidden", flexShrink: 0,
+            background: "linear-gradient(135deg, #c8dae3 0%, #a0bfcc 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <HomeOutlined style={{ fontSize: 32, color: "#4c7994" }} />
           </div>
 
-          <Flex gap={20} wrap="wrap">
-            <Stat icon="🛏" label="Beds" value={String(form.property?.beds ?? 3)} />
-            <Stat icon="🛁" label="Baths" value={String(form.property?.baths ?? 2)} />
-            <Stat icon="📐" label="Sq Ft" value={(form.property?.sqft ?? 1850).toLocaleString()} />
-            <Stat icon="🏡" label="Lot" value={(form.property?.lot ?? 8500).toLocaleString()} />
-            <Stat icon="🗓" label="Built" value={String(form.property?.built ?? 1995)} />
+          {/* Address */}
+          <div style={{ flex: 1 }}>
+            <Text style={{ fontSize: 18, fontWeight: 600, display: "block", marginBottom: 2 }}>
+              {form.addressComponents?.street_line || "Departing Property"}
+            </Text>
+            <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.45)", display: "block" }}>
+              {form.addressComponents
+                ? `${form.addressComponents.city}, ${form.addressComponents.state} ${form.addressComponents.zipcode}`
+                : "Address not provided"}
+            </Text>
+          </div>
+
+          {/* Vertical divider */}
+          <div style={{ width: 1, height: 60, background: "#f0f0f0", flexShrink: 0 }} />
+
+          {/* Stats */}
+          <Flex gap={20} wrap="wrap" style={{ flexShrink: 0 }}>
+            <Stat icon={<HomeOutlined />} label="Beds" value={String(form.property?.beds ?? 3)} />
+            <Stat icon={<HomeOutlined />} label="Baths" value={String(form.property?.baths ?? 2)} />
+            <Stat icon={<InfoCircleOutlined />} label="Sq Ft" value={(form.property?.sqft ?? 1850).toLocaleString()} />
+            <Stat icon={<InfoCircleOutlined />} label="Lot" value={(form.property?.lot ?? 8500).toLocaleString()} />
+            <Stat icon={<InfoCircleOutlined />} label="Built" value={String(form.property?.built ?? 1995)} />
           </Flex>
         </div>
 
-        {/* Financial fields */}
-        <div style={{ padding: "18px 18px 0" }}>
-          <Row gutter={24}>
-            {/* Departing property values */}
-            <Col span={16}>
-              <Text
-                style={{
-                  fontSize: 10,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  color: "rgba(0,0,0,0.45)",
-                  display: "block",
-                  marginBottom: 14,
-                }}
-              >
-                Departing Property Values{" "}
-                <span style={{ color: "rgba(0,0,0,0.23)", fontWeight: 400 }}>
-                  (Estimate — review and edit)
-                </span>
+        {/* 3-column large input fields */}
+        <div style={{ padding: "24px 24px 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+            {/* 1st Lien */}
+            <div>
+              <Text style={{
+                fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+              }}>
+                1st Lien Mortgage Balance
               </Text>
-
-              <Row gutter={12}>
-                {/* Departing Value */}
-                <Col span={6}>
-                  <FinancialField
-                    label="Departing Value"
-                    value={form.departingValue}
-                    onChange={(v) => setForm((f) => ({ ...f, departingValue: v }))}
-                  />
-                </Col>
-
-                {/* 1st Mortgage */}
-                <Col span={6}>
-                  <FinancialField
-                    label="Est. 1st Mortgage"
-                    value={form.mortgage1}
-                    onChange={(v) => setForm((f) => ({ ...f, mortgage1: v }))}
-                  />
-                </Col>
-
-                {/* 2nd Lien */}
-                <Col span={6}>
-                  <FinancialField
-                    label="Est. 2nd Lien"
-                    value={form.lien2}
-                    onChange={(v) => setForm((f) => ({ ...f, lien2: v ?? 0 }))}
-                  />
-                </Col>
-
-                {/* GBC Value — read-only, auto-calculated */}
-                <Col span={6}>
-                  <div style={{ marginBottom: 14 }}>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        textTransform: "uppercase",
-                        letterSpacing: 1,
-                        color: "rgba(0,0,0,0.45)",
-                        display: "block",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Est. GBC Value
-                    </Text>
-                    <div
-                      style={{
-                        height: 34,
-                        backgroundColor: "rgba(224,232,237,0.4)",
-                        border: "1px solid rgba(240,240,240,0.5)",
-                        borderRadius: 6,
-                        display: "flex",
-                        alignItems: "center",
-                        padding: "0 10px",
-                        gap: 4,
-                        color: "rgba(0,0,0,0.45)",
-                        fontSize: 12,
-                      }}
-                    >
-                      <DollarOutlined style={{ fontSize: 11 }} />
-                      {gbcValue != null ? gbcValue.toLocaleString() : "—"}
-                    </div>
-                    <Text type="secondary" style={{ fontSize: 10, display: "block", marginTop: 3 }}>
-                      75% of departing value — not an offer
-                    </Text>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-
-            {/* New purchase */}
-            <Col span={8}>
-              <Text
+              <InputNumber
+                prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.35)" }} />}
+                value={form.mortgage1}
+                onChange={(v) => setForm((f) => ({ ...f, mortgage1: v }))}
+                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(v) => Number(v?.replace(/,/g, "")) as 0}
+                placeholder="210,000"
                 style={{
-                  fontSize: 10,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  color: "rgba(0,0,0,0.45)",
-                  display: "block",
-                  marginBottom: 14,
+                  width: "100%", height: 64, fontSize: 18,
+                  borderWidth: 2, borderRadius: 10,
                 }}
-              >
-                New Purchase
+                size="large"
+              />
+            </div>
+
+            {/* 2nd Lien */}
+            <div>
+              <Text style={{
+                fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+              }}>
+                2nd Lien Balance
               </Text>
-              <div
+              <InputNumber
+                prefix={<DollarOutlined style={{ color: "rgba(0,0,0,0.35)" }} />}
+                value={form.lien2}
+                onChange={(v) => setForm((f) => ({ ...f, lien2: v ?? 0 }))}
+                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                parser={(v) => Number(v?.replace(/,/g, "")) as 0}
+                placeholder="0"
                 style={{
-                  backgroundColor: "rgba(224,232,237,0.3)",
-                  border: "1px solid #e0e8ed",
-                  borderRadius: 6,
-                  padding: "14px 14px 10px",
+                  width: "100%", height: 64, fontSize: 18,
+                  borderWidth: 2, borderRadius: 10,
                 }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    color: "rgba(0,0,0,0.45)",
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  Est. Purchase Price
-                </Text>
-                <div
-                  style={{
-                    height: 48,
-                    backgroundColor: "#f5f5f5",
-                    border: "1px solid #f0f0f0",
-                    borderRadius: 6,
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "0 14px",
-                    gap: 6,
-                    color: "rgba(0,0,0,0.45)",
-                    fontSize: 18,
-                    fontWeight: 500,
-                  }}
-                >
-                  <DollarOutlined style={{ fontSize: 16 }} />
+                size="large"
+              />
+            </div>
+
+            {/* Purchase Price (read-only from step 1) */}
+            <div>
+              <Text style={{
+                fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",
+                color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 8,
+              }}>
+                Purchase Price
+              </Text>
+              <div style={{
+                height: 64, borderRadius: 10, border: "2px solid #f0f0f0",
+                background: "#fafafa", display: "flex", alignItems: "center",
+                padding: "0 14px", gap: 8,
+              }}>
+                <DollarOutlined style={{ color: "rgba(0,0,0,0.35)", fontSize: 16 }} />
+                <Text style={{ fontSize: 18, color: "rgba(0,0,0,0.65)", fontWeight: 500 }}>
                   {form.purchasePrice != null ? form.purchasePrice.toLocaleString() : "—"}
-                </div>
+                </Text>
               </div>
-            </Col>
-          </Row>
+              <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.27)", display: "block", marginTop: 4 }}>
+                Set in previous step
+              </Text>
+            </div>
+          </div>
         </div>
 
         {/* Footer nav */}
-        <Flex
-          justify="space-between"
-          align="center"
-          style={{
-            borderTop: "1px solid #f0f0f0",
-            padding: "0 18px",
-            height: 50,
-            backgroundColor: "rgba(224,232,237,0.15)",
-          }}
-        >
+        <Flex justify="space-between" align="center" style={{
+          borderTop: "1px solid #f0f0f0",
+          padding: "14px 24px",
+        }}>
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
             onClick={() => setStep(0)}
-            style={{ color: "rgba(0,0,0,0.45)", fontSize: 12 }}
+            style={{ color: "rgba(0,0,0,0.45)", fontSize: 13 }}
           >
             Back
           </Button>
           <Button
-            style={{ backgroundColor: "#4c7994", borderColor: "#4c7994", color: "#fff", fontSize: 12 }}
+            onClick={() => setStep(2)}
+            style={{
+              background: "#4c7994", borderColor: "#4c7994", color: "#fff",
+              height: 48, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500,
+              borderRadius: 10,
+              boxShadow: "0px 4px 6px rgba(0,0,0,0.12)",
+            }}
             icon={<ArrowRightOutlined />}
             iconPosition="end"
-            onClick={() => setStep(2)}
           >
             Calculate Scenarios
           </Button>
@@ -745,53 +676,81 @@ export default function NewOpportunityPage() {
     ? `Opportunity — ${form.addressComponents.street_line}`
     : "Opportunity — New";
 
-  const SCENARIOS = [
+  // ── Product computations ───────────────────────────────────────────────────
+  const ieMaxLoan   = Math.round(pp * 0.75);
+  const bbysMaxLoan = Math.round(pp * 0.70);
+  const fhcoMaxLoan = Math.round(pp * 0.75);
+  const ccMaxLoan   = Math.round((pp + dv) * 0.80);
+
+  const ieOrig   = Math.round(ieMaxLoan   * 0.020);
+  const bbysOrig = Math.round(bbysMaxLoan * 0.015);
+  const fhcoOrig = Math.round(fhcoMaxLoan * 0.0175);
+  const ccOrig   = Math.round(ccMaxLoan   * 0.015);
+
+  // Combo (card 5): 60% IE / 40% BBYS split
+  const comboIeSplit   = 0.60;
+  const comboBbysSplit = 0.40;
+  const comboIeAmt     = Math.round(ieMaxLoan   * comboIeSplit);
+  const comboBbysAmt   = Math.round(bbysMaxLoan * comboBbysSplit);
+  const comboIeOrig    = Math.round(comboIeAmt   * 0.020);
+  const comboBbysOrig  = Math.round(comboBbysAmt * 0.015);
+  const comboTotal     = comboIeAmt + comboBbysAmt;
+  const comboTotalOrig = comboIeOrig + comboBbysOrig;
+
+  // GBC (card 6)
+  const gbcContractFee = Math.round(pp * 0.01);
+
+  const STANDALONE = [
     {
       key: "ie",
       icon: <HomeOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
-      name: "Instant Equity (1st lien)",
-      maxLoan: Math.round(pp * 0.9),
-      payoff: null as number | null,
+      name: "Instant Equity",
+      tagline: "1st lien bridge loan",
+      maxLoan: ieMaxLoan,
       ltvPct: 75,
-      originationPct: 2,
-      gbcFee: 5000 as number | null,
+      originationPct: 2.0,
+      origination: ieOrig,
+      gbcFee: 5000,
     },
     {
-      key: "co",
-      icon: <BankOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
-      name: "Cash Offer",
-      maxLoan: Math.round(pp * 0.75),
-      payoff: null as number | null,
+      key: "bbys",
+      icon: <SwapOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "BBYS Cash Offer",
+      tagline: "Buy before you sell",
+      maxLoan: bbysMaxLoan,
       ltvPct: 70,
       originationPct: 1.5,
-      gbcFee: 5000 as number | null,
+      origination: bbysOrig,
+      gbcFee: 5000,
+    },
+    {
+      key: "fhco",
+      icon: <BankOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
+      name: "Flyhomes Cash Offer",
+      tagline: "All-cash purchase offer",
+      maxLoan: fhcoMaxLoan,
+      ltvPct: 75,
+      originationPct: 1.75,
+      origination: fhcoOrig,
+      gbcFee: 5000,
     },
     {
       key: "cc",
-      icon: <SwapOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
-      name: "Cross Collateral",
-      maxLoan: Math.round(pp * 0.8),
-      payoff: null as number | null,
-      ltvPct: 75,
-      originationPct: 1.5,
-      gbcFee: null as number | null,
-    },
-    {
-      key: "combo",
       icon: <AppstoreOutlined style={{ fontSize: 16, color: "#4c7994" }} />,
-      name: "Instant Equity+Cash Offer Combo",
-      maxLoan: Math.round((pp + dv) * 0.65),
-      payoff: m1 > 0 ? m1 : null as number | null,
-      ltvPct: 65,
-      originationPct: 1.75,
-      gbcFee: 7500 as number | null,
+      name: "Cross Collateral",
+      tagline: "Both properties as collateral",
+      maxLoan: ccMaxLoan,
+      ltvPct: 80,
+      originationPct: 1.5,
+      origination: ccOrig,
+      gbcFee: null,
     },
   ];
 
   const step3 = (
     <div>
       {/* Header row */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: 14 }}>
+      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
         <Flex align="center" gap={8}>
           <Button
             type="text"
@@ -799,7 +758,7 @@ export default function NewOpportunityPage() {
             onClick={() => setStep(form.departingChoice === "none" ? 0 : 1)}
             style={{ color: "rgba(0,0,0,0.45)", padding: "0 4px" }}
           />
-          <Text strong style={{ fontSize: 17 }}>{opportunityTitle}</Text>
+          <Text strong style={{ fontSize: 18 }}>{opportunityTitle}</Text>
         </Flex>
         <Button
           type="text"
@@ -810,149 +769,316 @@ export default function NewOpportunityPage() {
         </Button>
       </Flex>
 
-      {/* Disclaimer banner */}
+      {/* Amber disclaimer banner */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        background: "rgba(224,232,237,0.5)", border: "1px solid #f0f0f0",
-        borderRadius: 6, padding: "9px 14px", marginBottom: 14,
+        display: "flex", alignItems: "flex-start", gap: 10,
+        background: "rgba(255,238,196,0.5)", border: "1px solid #f3f4f6",
+        borderRadius: 8, padding: "10px 16px", marginBottom: 18,
       }}>
-        <InfoCircleOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", flexShrink: 0 }} />
-        <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.45)" }}>
-          Estimates only. Not an offer. Convert to Deal for formal research.{" "}
-          <span style={{ color: "rgba(0,0,0,0.23)" }}>Like a mortgage pre-qual — subject to verification.</span>
+        <InfoCircleOutlined style={{ fontSize: 14, color: "#b45309", marginTop: 1, flexShrink: 0 }} />
+        <Text style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+          Estimates only — not an offer. Convert to Deal for formal underwriting research.{" "}
+          <span style={{ color: "#b45309" }}>Like a mortgage pre-qual, all values are subject to verification.</span>
         </Text>
       </div>
 
-      {/* Summary bar */}
+      {/* Summary bar card */}
       <div style={{
-        background: "#fff", border: "1px solid #f0f0f0", borderRadius: 6,
-        padding: "10px 18px", marginBottom: 14, display: "flex", gap: 40,
+        background: "#fff",
+        border: "1px solid #f0f0f0",
+        borderRadius: 12,
+        boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.07)",
+        padding: "14px 24px",
+        marginBottom: 18,
+        display: "flex",
+        gap: 48,
+        alignItems: "center",
       }}>
         {[
           { label: "Purchase Price", value: form.purchasePrice != null ? fmt(form.purchasePrice) : "—" },
           { label: "Departing Value", value: form.departingValue != null ? fmt(form.departingValue) : "—" },
           { label: "1st Mortgage", value: form.mortgage1 != null ? fmt(form.mortgage1) : "—" },
-        ].map(({ label, value }) => (
+          { label: "Flyhomes Value", value: gbcValue != null ? fmt(gbcValue) : "—", highlight: true },
+        ].map(({ label, value, highlight }) => (
           <div key={label}>
-            <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>
+            <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 2 }}>
               {label}
             </Text>
-            <Text style={{ fontSize: 15 }}>{value}</Text>
+            <Text style={{ fontSize: 16, fontWeight: highlight ? 700 : 400, color: highlight ? "#4c7994" : "rgba(0,0,0,0.88)" }}>
+              {value}
+            </Text>
           </div>
         ))}
+        <div style={{ marginLeft: "auto" }}>
+          <Button
+            onClick={() => setStep(1)}
+            style={{ borderColor: "#4c7994", color: "#4c7994", borderRadius: 8, height: 36 }}
+          >
+            Edit Values
+          </Button>
+        </div>
       </div>
 
-      {/* Product cards */}
+      {/* Product cards — 3 × 2 grid */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        gridTemplateColumns: "repeat(3, 1fr)",
         gap: 14,
-        marginBottom: 14,
+        marginBottom: 18,
       }}>
-        {SCENARIOS.map(s => {
-          const requested = Math.round(pp * s.ltvPct / 100);
-          const origination = Math.round(requested * s.originationPct / 100);
-          const maxNet = s.payoff != null ? s.maxLoan - s.payoff : s.maxLoan;
+
+        {/* Cards 1–4: standalone products */}
+        {STANDALONE.map(s => {
           const rows: { label: string; value: string }[] = [
-            { label: "MAX LOAN:", value: fmt(s.maxLoan) },
-            { label: "PAYOFF:", value: s.payoff != null ? fmt(s.payoff) : "N/A" },
-            { label: "MAX NET:", value: fmt(maxNet) },
-            { label: `REQUESTED:`, value: `${fmt(requested)} (${s.ltvPct}%)` },
-            { label: `ORIGINATION (${s.originationPct}%):`, value: fmt(origination) },
-            { label: "GBC FEE:", value: s.gbcFee != null ? fmt(s.gbcFee) : "-" },
+            { label: `MAX LOAN (${s.ltvPct}% LTV)`, value: fmt(s.maxLoan) },
+            { label: `ORIGINATION (${s.originationPct}%)`, value: fmt(s.origination) },
+            { label: "GBC FEE", value: s.gbcFee != null ? fmt(s.gbcFee) : "—" },
+            { label: "TOTAL EST. COST", value: fmt(s.origination + (s.gbcFee ?? 0)) },
           ];
           return (
             <div key={s.key} style={{
-              background: "#fff", border: "1px solid #f0f0f0",
-              borderRadius: 10, display: "flex", flexDirection: "column",
+              background: "#fff",
+              border: "1px solid #f0f0f0",
+              borderRadius: 12,
+              boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.07)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
             }}>
-              {/* Icon + name */}
-              <div style={{ padding: "17px 17px 0" }}>
+              <div style={{ height: 4, background: "#4c7994" }} />
+              <div style={{ padding: "18px 18px 14px" }}>
                 <div style={{
-                  width: 42, height: 42, background: "#e0e8ed", borderRadius: 6,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 14,
+                  width: 40, height: 40, background: "rgba(76,121,148,0.1)", borderRadius: 8,
+                  display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
                 }}>
                   {s.icon}
                 </div>
-                <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.88)", display: "block", marginBottom: 14 }}>
+                <Text style={{ fontSize: 14, fontWeight: 600, color: "rgba(0,0,0,0.88)", display: "block" }}>
                   {s.name}
                 </Text>
+                <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>{s.tagline}</Text>
               </div>
-
-              <div style={{ height: 1, background: "#f0f0f0", margin: "0 17px" }} />
-
-              {/* Key-value rows */}
-              <div style={{ padding: "14px 17px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ height: 1, background: "#f5f5f5", margin: "0 18px" }} />
+              <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
                 {rows.map(({ label, value }) => (
                   <Flex key={label} justify="space-between" align="center">
-                    <Text style={{ fontSize: 10.5, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {label}
                     </Text>
-                    <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.88)" }}>{value}</Text>
+                    <Text style={{ fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.88)" }}>{value}</Text>
                   </Flex>
                 ))}
               </div>
-
-              <div style={{ height: 1, background: "#f0f0f0", margin: "0 17px" }} />
-
-              {/* CTA */}
-              <div style={{ padding: 17 }}>
-                <Button
-                  block
-                  style={{ background: "#4c7994", borderColor: "#4c7994", color: "#fff", borderRadius: 6 }}
-                  icon={<ArrowRightOutlined />}
-                  iconPosition="end"
-                >
+              <div style={{ height: 1, background: "#f5f5f5", margin: "0 18px" }} />
+              <div style={{ padding: 18 }}>
+                <Button block style={{
+                  background: "#4c7994", borderColor: "#4c7994", color: "#fff",
+                  borderRadius: 8, height: 38, fontWeight: 500,
+                }} icon={<ArrowRightOutlined />} iconPosition="end">
                   Convert to Deal
                 </Button>
               </div>
             </div>
           );
         })}
+
+        {/* Card 5: IE + BBYS Combo */}
+        <div style={{
+          background: "#fff",
+          border: "1px solid #c8dae3",
+          borderRadius: 12,
+          boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.07)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}>
+          {/* Dual-color accent bar */}
+          <div style={{ height: 4, display: "flex" }}>
+            <div style={{ flex: 0.6, background: "#4c7994" }} />
+            <div style={{ flex: 0.4, background: "#7db4cc" }} />
+          </div>
+          <div style={{ padding: "18px 18px 14px" }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+              <div style={{
+                width: 28, height: 28, background: "rgba(76,121,148,0.1)", borderRadius: 6,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <HomeOutlined style={{ fontSize: 13, color: "#4c7994" }} />
+              </div>
+              <div style={{
+                width: 28, height: 28, background: "rgba(76,121,148,0.07)", borderRadius: 6,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <SwapOutlined style={{ fontSize: 13, color: "#4c7994" }} />
+              </div>
+            </div>
+            <Text style={{ fontSize: 14, fontWeight: 600, color: "rgba(0,0,0,0.88)", display: "block" }}>
+              IE + BBYS Cash Offer
+            </Text>
+            <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>Combined product · split structure</Text>
+          </div>
+          <div style={{ height: 1, background: "#f5f5f5", margin: "0 18px" }} />
+
+          {/* Split breakdown */}
+          <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+            {/* IE portion */}
+            <div style={{
+              background: "rgba(76,121,148,0.05)", borderRadius: 8,
+              padding: "10px 12px", marginBottom: 8,
+            }}>
+              <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
+                <Text style={{ fontSize: 10, color: "#4c7994", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Instant Equity · {Math.round(comboIeSplit * 100)}%
+                </Text>
+                <Text style={{ fontSize: 12, fontWeight: 600, color: "#4c7994" }}>{fmt(comboIeAmt)}</Text>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Origination (2%)</Text>
+                <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.65)" }}>{fmt(comboIeOrig)}</Text>
+              </Flex>
+            </div>
+
+            {/* BBYS portion */}
+            <div style={{
+              background: "rgba(125,180,204,0.07)", borderRadius: 8,
+              padding: "10px 12px", marginBottom: 10,
+            }}>
+              <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
+                <Text style={{ fontSize: 10, color: "#4c7994", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  BBYS Cash Offer · {Math.round(comboBbysSplit * 100)}%
+                </Text>
+                <Text style={{ fontSize: 12, fontWeight: 600, color: "#4c7994" }}>{fmt(comboBbysAmt)}</Text>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Origination (1.5%)</Text>
+                <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.65)" }}>{fmt(comboBbysOrig)}</Text>
+              </Flex>
+            </div>
+
+            {/* Combined totals */}
+            <div style={{ height: 1, background: "#f0f0f0", marginBottom: 10 }} />
+            <Flex justify="space-between" align="center" style={{ marginBottom: 5 }}>
+              <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>COMBINED LOAN</Text>
+              <Text style={{ fontSize: 13, fontWeight: 700, color: "rgba(0,0,0,0.88)" }}>{fmt(comboTotal)}</Text>
+            </Flex>
+            <Flex justify="space-between" align="center">
+              <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>TOTAL ORIGINATION</Text>
+              <Text style={{ fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.88)" }}>{fmt(comboTotalOrig)}</Text>
+            </Flex>
+          </div>
+          <div style={{ height: 1, background: "#f5f5f5", margin: "0 18px" }} />
+          <div style={{ padding: 18 }}>
+            <Button block style={{
+              background: "#4c7994", borderColor: "#4c7994", color: "#fff",
+              borderRadius: 8, height: 38, fontWeight: 500,
+            }} icon={<ArrowRightOutlined />} iconPosition="end">
+              Convert to Deal
+            </Button>
+          </div>
+        </div>
+
+        {/* Card 6: Guaranteed Backup Contract */}
+        <div style={{
+          background: "linear-gradient(145deg, #fdf8f0 0%, #fef6e8 100%)",
+          border: "1px solid #e8d5b0",
+          borderRadius: 12,
+          boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.07)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}>
+          <div style={{ height: 4, background: "linear-gradient(90deg, #c98a2e 0%, #e0a84a 100%)" }} />
+          <div style={{ padding: "18px 18px 14px" }}>
+            <div style={{
+              width: 40, height: 40, background: "rgba(201,138,46,0.12)", borderRadius: 8,
+              display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+            }}>
+              <FileTextOutlined style={{ fontSize: 16, color: "#c98a2e" }} />
+            </div>
+            <Text style={{ fontSize: 14, fontWeight: 600, color: "rgba(0,0,0,0.88)", display: "block" }}>
+              Guaranteed Backup Contract
+            </Text>
+            <Text style={{ fontSize: 11, color: "rgba(0,0,0,0.4)" }}>Certainty for seller and buyer</Text>
+          </div>
+          <div style={{ height: 1, background: "#e8d5b0", margin: "0 18px" }} />
+          <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
+            {[
+              { label: "PURCHASE PRICE", value: fmt(pp) },
+              { label: "CONTRACT FEE (1%)", value: fmt(gbcContractFee) },
+              { label: "CLOSE CERTAINTY", value: "Guaranteed" },
+              { label: "LISTING REQUIRED", value: "Yes" },
+            ].map(({ label, value }) => (
+              <Flex key={label} justify="space-between" align="center">
+                <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {label}
+                </Text>
+                <Text style={{ fontSize: 12, fontWeight: 500, color: "rgba(0,0,0,0.88)" }}>{value}</Text>
+              </Flex>
+            ))}
+            <div style={{
+              marginTop: 4, background: "rgba(201,138,46,0.08)",
+              border: "1px solid rgba(201,138,46,0.2)",
+              borderRadius: 6, padding: "8px 10px",
+            }}>
+              <Text style={{ fontSize: 10.5, color: "#92611a", lineHeight: 1.5 }}>
+                Flyhomes backs the offer with a guarantee, giving the seller confidence to accept — even if the buyer&apos;s financing falls through.
+              </Text>
+            </div>
+          </div>
+          <div style={{ height: 1, background: "#e8d5b0", margin: "0 18px" }} />
+          <div style={{ padding: 18 }}>
+            <Button block style={{
+              background: "#c98a2e", borderColor: "#c98a2e", color: "#fff",
+              borderRadius: 8, height: 38, fontWeight: 500,
+            }} icon={<ArrowRightOutlined />} iconPosition="end">
+              Convert to Deal
+            </Button>
+          </div>
+        </div>
+
       </div>
 
       {/* Borrower context */}
       <div style={{
-        background: "#fff", border: "1px solid #f0f0f0",
-        borderRadius: 10, overflow: "hidden",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+        background: "#fff",
+        border: "1px solid #f0f0f0",
+        borderRadius: 12,
+        boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.07)",
+        overflow: "hidden",
       }}>
         <div style={{
-          background: "rgba(224,232,237,0.2)", borderBottom: "1px solid #f0f0f0",
-          padding: "12px 18px",
+          borderBottom: "1px solid #f0f0f0",
+          padding: "14px 24px",
         }}>
-          <Text style={{ fontSize: 10.5, fontWeight: 500, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Borrower Context (optional)
+          <Text style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Borrower Context <span style={{ fontWeight: 400 }}>(optional)</span>
           </Text>
         </div>
-        <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ padding: "18px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
           <div>
-            <Flex align="center" gap={6} style={{ marginBottom: 6 }}>
-              <HomeOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }} />
-              <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>Borrower Name</Text>
-            </Flex>
+            <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.55)", display: "block", marginBottom: 6 }}>
+              Borrower Name
+            </Text>
             <Input
               placeholder="e.g. Smith"
               value={borrowerName}
               onChange={e => setBorrowerName(e.target.value)}
-              style={{ borderColor: "#f0f0f0", borderRadius: 6, fontSize: 12 }}
+              style={{ borderRadius: 8, fontSize: 13, height: 40 }}
             />
             <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.27)", display: "block", marginTop: 4 }}>
               Required when converting to a Deal
             </Text>
           </div>
           <div>
-            <Flex align="center" gap={6} style={{ marginBottom: 6 }}>
-              <FileTextOutlined style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }} />
-              <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>Notes</Text>
-            </Flex>
+            <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.55)", display: "block", marginBottom: 6 }}>
+              Notes
+            </Text>
             <Input.TextArea
               placeholder="Add context for this opportunity..."
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
-              style={{ borderColor: "#f0f0f0", borderRadius: 6, fontSize: 12, resize: "none" }}
+              style={{ borderRadius: 8, fontSize: 13, resize: "none" }}
             />
           </div>
         </div>
