@@ -278,7 +278,7 @@ function statusColor(status: string): string {
 // ─────────────────────────────────────────────────────────────
 // Home / Dashboard
 // ─────────────────────────────────────────────────────────────
-function HomeView({ onNavigate, onOpenMedha }: { onNavigate: (s: Section) => void; onOpenMedha: (q?: string) => void }) {
+function HomeView({ onNavigate, onOpenMedha }: { onNavigate: (s: Section, tab?: string) => void; onOpenMedha: (q?: string) => void }) {
   const [askOpen, setAskOpen] = useState(false);
   const [askText, setAskText] = useState("");
   const [askSent, setAskSent] = useState(false);
@@ -314,7 +314,7 @@ function HomeView({ onNavigate, onOpenMedha }: { onNavigate: (s: Section) => voi
       label: "Create Marketing",
       desc: "Generate co-branded flyers and borrower materials.",
       cta: "Browse materials",
-      onClick: () => onNavigate("resources"),
+      onClick: () => onNavigate("resources", "marketing"),
     },
     {
       icon: <MailOutlined />,
@@ -3282,9 +3282,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
               onClick={() => setStep(hasDepProperty ? "property-details" : "new-opp")}
               style={{ padding: "0 4px" }}
             />
-            <Title level={4} style={{ margin: 0 }}>
-              Scenario{streetLine3 ? ` — ${streetLine3}` : ""}
-            </Title>
+            <Title level={4} style={{ margin: 0 }}>Scenario Results</Title>
           </Flex>
           <Space>
             <Button
@@ -3319,31 +3317,41 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
 
         {/* Summary stats bar */}
         <Card style={{ border: "1px solid #f0f0f0", marginBottom: 16 }} styles={{ body: { padding: "10px 18px" } }}>
-          <Flex gap={48} wrap="wrap">
-            {pp > 0 && (
+          <Flex align="center" gap={0} wrap="wrap">
+            {/* Address */}
+            <div style={{ paddingRight: 24, marginRight: 24, borderRight: "1px solid #f0f0f0" }}>
+              <Text style={{ ...metricLabel, display: "block" }}>Property</Text>
+              <Text style={{ fontSize: 13.5, fontWeight: 500 }}>
+                {streetLine3 || "No address"}
+              </Text>
+            </div>
+            {/* Values — always shown */}
+            <Flex gap={32} wrap="wrap">
+              <div>
+                <Text style={{ ...metricLabel, display: "block" }}>Flyhomes Value</Text>
+                <Text style={{ fontSize: 15.75, fontWeight: 600, color: dv > 0 ? ACCENT : "rgba(0,0,0,0.35)" }}>
+                  {dv > 0 ? fmt(Math.round(dv * 0.75)) : "N/A"}
+                </Text>
+              </div>
               <div>
                 <Text style={{ ...metricLabel, display: "block" }}>Purchase Price</Text>
-                <Text style={{ fontSize: 15.75 }}>{fmt(pp)}</Text>
+                <Text style={{ fontSize: 15.75, color: pp > 0 ? undefined : "rgba(0,0,0,0.35)" }}>
+                  {pp > 0 ? fmt(pp) : "N/A"}
+                </Text>
               </div>
-            )}
-            {hasDepProperty && dv > 0 && (
-              <div>
-                <Text style={{ ...metricLabel, display: "block" }}>Departing Value</Text>
-                <Text style={{ fontSize: 15.75 }}>{fmt(dv)}</Text>
-              </div>
-            )}
-            {hasDepProperty && fm > 0 && (
               <div>
                 <Text style={{ ...metricLabel, display: "block" }}>1st Mortgage</Text>
-                <Text style={{ fontSize: 15.75 }}>{fmt(fm)}</Text>
+                <Text style={{ fontSize: 15.75, color: fm > 0 ? undefined : "rgba(0,0,0,0.35)" }}>
+                  {fm > 0 ? fmt(fm) : "N/A"}
+                </Text>
               </div>
-            )}
-            {!hasDepProperty && (
               <div>
-                <Text style={{ ...metricLabel, display: "block" }}>Departing Property</Text>
-                <Text style={{ fontSize: 15.75 }}>None</Text>
+                <Text style={{ ...metricLabel, display: "block" }}>2nd Lien</Text>
+                <Text style={{ fontSize: 15.75, color: (data.secondLien ?? 0) > 0 ? undefined : "rgba(0,0,0,0.35)" }}>
+                  {(data.secondLien ?? 0) > 0 ? fmt(data.secondLien ?? 0) : "N/A"}
+                </Text>
               </div>
-            )}
+            </Flex>
           </Flex>
         </Card>
 
@@ -4568,8 +4576,8 @@ function BBYSGuidelinesPage({ onBack }: { onBack: () => void }) {
 // ─────────────────────────────────────────────────────────────
 // Resources
 // ─────────────────────────────────────────────────────────────
-function ResourcesView({ profile, branding }: { profile: UserProfile; branding: BrandingData }) {
-  const [tab, setTab] = useState("product-guidelines");
+function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile; branding: BrandingData; initialTab?: string }) {
+  const [tab, setTab] = useState(initialTab ?? "product-guidelines");
   const [marketingTab, setMarketingTab] = useState("flyers");
   const [previewFlyer, setPreviewFlyer] = useState<FlyerProduct | null>(null);
   const [activeGuideline, setActiveGuideline] = useState<string | null>(null);
@@ -5709,9 +5717,15 @@ const SECTION_LABELS: Record<Section, string> = {
 
 export default function FullPortalNavigationPage() {
   const [section, setSection] = useState<Section>("home");
+  const [resourceInitTab, setResourceInitTab] = useState<string | undefined>(undefined);
   const [notifOpen, setNotifOpen] = useState(false);
   const [medhaOpen, setMedhaOpen] = useState(false);
   const [medhaInitQuery, setMedhaInitQuery] = useState<string | undefined>(undefined);
+
+  function navigateTo(s: Section, tab?: string) {
+    setResourceInitTab(s === "resources" ? tab : undefined);
+    setSection(s);
+  }
 
   function openMedha(q?: string) {
     setMedhaInitQuery(q);
@@ -5794,10 +5808,10 @@ export default function FullPortalNavigationPage() {
           </Header>
 
           <Content style={{ backgroundColor: CONTENT_BG, padding: 24 }}>
-            {section === "home" && <HomeView onNavigate={setSection} onOpenMedha={openMedha} />}
+            {section === "home" && <HomeView onNavigate={navigateTo} onOpenMedha={openMedha} />}
             {section === "pipeline" && <PipelineView profile={profile} branding={branding} />}
             {section === "contacts" && <ContactsView />}
-            {section === "resources" && <ResourcesView profile={profile} branding={branding} />}
+            {section === "resources" && <ResourcesView profile={profile} branding={branding} initialTab={resourceInitTab} />}
             {section === "settings" && <SettingsView profile={profile} onSaveProfile={setProfile} branding={branding} onSaveBranding={setBranding} />}
           </Content>
         </Layout>
