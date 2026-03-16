@@ -136,7 +136,7 @@ const DEFAULT_BRANDING: BrandingData = {
 
 interface Opportunity {
   key: string; primaryBorrower: string; departingProperty: string;
-  newPurchaseProperty: string; gbc: string;
+  purchasePrice: number; flyhomesValue: number; status: string;
 }
 interface Deal {
   key: string; id: string; borrower: string; address: string;
@@ -156,14 +156,14 @@ interface Notification {
 // Mock data
 // ─────────────────────────────────────────────────────────────
 const OPPORTUNITIES: Opportunity[] = [
-  { key: "1", primaryBorrower: "Christina Johnson", departingProperty: "527 S Cloverdale St, Seattle, WA", newPurchaseProperty: "WA", gbc: "Draft" },
-  { key: "2", primaryBorrower: "Harry Henderson", departingProperty: "1968 Madison Ridge Lane, Salt Lake County, UT", newPurchaseProperty: "UT", gbc: "Pending review" },
-  { key: "3", primaryBorrower: "Sam Rockwell", departingProperty: "8547 S Rundstane Dr, Salt Lake County, UT", newPurchaseProperty: "UT", gbc: "Draft" },
-  { key: "4", primaryBorrower: "Jane Whitmore", departingProperty: "305 Canyon Rim Rd, Salt Lake City, UT", newPurchaseProperty: "UT", gbc: "Draft" },
-  { key: "5", primaryBorrower: "Michael Torres", departingProperty: "1244 E Meadow View Dr, Colorado Springs, CO", newPurchaseProperty: "CO", gbc: "Recommendation ready" },
-  { key: "6", primaryBorrower: "Sarah Kim", departingProperty: "2891 NE 24th Ave, Portland, OR", newPurchaseProperty: "OR", gbc: "Draft" },
-  { key: "7", primaryBorrower: "David Park", departingProperty: "611 Bellevue Way NE, Bellevue, WA", newPurchaseProperty: "WA", gbc: "Cancelled" },
-  { key: "8", primaryBorrower: "Emily Chen", departingProperty: "7742 S 900 E, Sandy, UT", newPurchaseProperty: "UT", gbc: "Draft" },
+  { key: "1", primaryBorrower: "Christina Johnson", departingProperty: "527 S Cloverdale St, Seattle, WA", purchasePrice: 750000, flyhomesValue: 820000, status: "Draft" },
+  { key: "2", primaryBorrower: "Harry Henderson", departingProperty: "1968 Madison Ridge Lane, Salt Lake County, UT", purchasePrice: 325000, flyhomesValue: 380000, status: "Pending review" },
+  { key: "3", primaryBorrower: "Sam Rockwell", departingProperty: "8547 S Rundstane Dr, Salt Lake County, UT", purchasePrice: 540000, flyhomesValue: 510000, status: "Draft" },
+  { key: "4", primaryBorrower: "Jane Whitmore", departingProperty: "305 Canyon Rim Rd, Salt Lake City, UT", purchasePrice: 1100000, flyhomesValue: 1250000, status: "Draft" },
+  { key: "5", primaryBorrower: "Michael Torres", departingProperty: "1244 E Meadow View Dr, Colorado Springs, CO", purchasePrice: 420000, flyhomesValue: 445000, status: "Recommendation ready" },
+  { key: "6", primaryBorrower: "Sarah Kim", departingProperty: "2891 NE 24th Ave, Portland, OR", purchasePrice: 610000, flyhomesValue: 590000, status: "Draft" },
+  { key: "7", primaryBorrower: "David Park", departingProperty: "611 Bellevue Way NE, Bellevue, WA", purchasePrice: 895000, flyhomesValue: 975000, status: "Cancelled" },
+  { key: "8", primaryBorrower: "Emily Chen", departingProperty: "7742 S 900 E, Sandy, UT", purchasePrice: 490000, flyhomesValue: 465000, status: "Draft" },
 ];
 
 const DEALS: Deal[] = [
@@ -2634,13 +2634,14 @@ const NEW_OPP_STEPS: { key: NewOppStep; label: string }[] = [
   { key: "results", label: "Results" },
 ];
 
-function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void; profile: UserProfile; branding: BrandingData }) {
-  const [step, setStep] = useState<NewOppStep>("new-opp");
+function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialData }: { onBack: () => void; profile: UserProfile; branding: BrandingData; initialStep?: NewOppStep; initialData?: Partial<NewOppData> }) {
+  const [step, setStep] = useState<NewOppStep>(initialStep ?? "new-opp");
   const [data, setData] = useState<NewOppData>({
     purchasePrice: null, departingChoice: null, departingAddress: "",
     propertyLoading: false, beds: null, baths: null, sqft: null, lot: null, yearBuilt: null,
     homeValue: null, firstMortgage: null, secondLien: null,
     borrowerName: "", notes: "",
+    ...initialData,
   });
   const [addressOptions, setAddressOptions] = useState<{ value: string }[]>([]);
   const lookupDoneRef = useRef(false);
@@ -3954,6 +3955,7 @@ function NewOpportunityFlow({ onBack, profile, branding }: { onBack: () => void;
 function PipelineView({ profile, branding }: { profile: UserProfile; branding: BrandingData }) {
   const [activeDeal, setActiveDeal] = useState<Deal | null>(null);
   const [showNewOpp, setShowNewOpp] = useState(false);
+  const [scenarioOpp, setScenarioOpp] = useState<Opportunity | null>(null);
   const [tab, setTab] = useState("opportunities");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -3967,23 +3969,49 @@ function PipelineView({ profile, branding }: { profile: UserProfile; branding: B
     return <NewOpportunityFlow onBack={() => setShowNewOpp(false)} profile={profile} branding={branding} />;
   }
 
+  if (scenarioOpp) {
+    const propData = lookupPropertyData(scenarioOpp.departingProperty);
+    const initData: Partial<NewOppData> = {
+      purchasePrice: scenarioOpp.purchasePrice,
+      departingChoice: "has-address",
+      departingAddress: scenarioOpp.departingProperty,
+      propertyLoading: false,
+      borrowerName: scenarioOpp.primaryBorrower,
+      homeValue: scenarioOpp.flyhomesValue,
+      firstMortgage: propData?.mortgage ?? null,
+      secondLien: null,
+      beds: propData?.beds ?? null,
+      baths: propData?.baths ?? null,
+      sqft: propData?.sqft ?? null,
+      lot: propData?.lot ?? null,
+      yearBuilt: propData?.yearBuilt ?? null,
+      notes: "",
+    };
+    return <NewOpportunityFlow onBack={() => setScenarioOpp(null)} profile={profile} branding={branding} initialStep="results" initialData={initData} />;
+  }
+
   const filteredOpps = OPPORTUNITIES.filter(o => {
     const q = search.toLowerCase();
     return !q || o.primaryBorrower.toLowerCase().includes(q) || o.departingProperty.toLowerCase().includes(q);
   });
 
+  const fmt$ = (n: number) => "$" + n.toLocaleString();
   const oppCols: TableProps<Opportunity>["columns"] = [
     { title: "Primary borrower", dataIndex: "primaryBorrower", key: "primaryBorrower", width: 180 },
     { title: "Departing property", dataIndex: "departingProperty", key: "departingProperty", ellipsis: true },
-    { title: "New purchase property", dataIndex: "newPurchaseProperty", key: "newPurchaseProperty", width: 200 },
-    { title: "GBC", dataIndex: "gbc", key: "gbc", width: 160 },
+    { title: "Flyhomes Value", dataIndex: "flyhomesValue", key: "flyhomesValue", width: 150, render: (v: number) => <Text style={{ color: ACCENT, fontWeight: 500 }}>{fmt$(v)}</Text> },
+    { title: "Purchase Price", dataIndex: "purchasePrice", key: "purchasePrice", width: 140, render: (v: number) => fmt$(v) },
     {
-      title: "Action", key: "action", width: 72,
+      title: "Status", dataIndex: "status", key: "status", width: 160,
+      render: (v: string) => <Tag color={statusColor(v)}>{v}</Tag>,
+    },
+    {
+      title: "", key: "action", width: 72,
       render: (_: unknown, row: Opportunity) => (
         <Button
           type="text" size="small"
           icon={
-            row.gbc === "Pending review" || row.gbc === "Cancelled"
+            row.status === "Pending review" || row.status === "Cancelled"
               ? <CloseCircleOutlined style={{ color: "rgba(0,0,0,0.45)" }} />
               : <DeleteOutlined style={{ color: "rgba(0,0,0,0.45)" }} />
           }
@@ -4046,6 +4074,7 @@ function PipelineView({ profile, branding }: { profile: UserProfile; branding: B
                 <Table
                   columns={oppCols}
                   dataSource={filteredOpps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
+                  onRow={(row) => ({ onClick: () => setScenarioOpp(row), style: { cursor: "pointer" } })}
                   pagination={{
                     current: page,
                     pageSize: PAGE_SIZE,
@@ -4587,18 +4616,18 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
   }
 
   const products = [
-    { name: "Buy Before You Sell", desc: "Clients buy the new home before selling the current one. No contingency, stronger offer.", icon: <HomeOutlined />, color: ACCENT },
-    { name: "Cash Offer", desc: "Flyhomes purchases with cash. Client repays with their mortgage after closing.", icon: <DollarOutlined />, color: "#1677ff" },
-    { name: "Instant Equity", desc: "Unlock equity from the departing property before it sells to fund the next purchase.", icon: <AppstoreOutlined />, color: "#52c41a" },
-    { name: "Cross Collateral", desc: "Use both properties as collateral to significantly increase purchasing power.", icon: <TeamOutlined />, color: "#faad14" },
+    { name: "Buy Before You Sell Cash Offer (BBYS FCO)", desc: "The Buy Before You Sell version of the Cash Offer: a short-term purchase bridge loan on the new home designed for buyers who will sell their current home after closing, and may use a GBC to remove the sale contingency and help qualify.", icon: <HomeOutlined />, color: ACCENT },
+    { name: "Flyhomes Cash Offer", desc: "A short-term purchase bridge loan on the new home that helps a buyer make a strong, non-contingent offer and close fast, without needing a departing-home sale plan or a Guaranteed Backup Contract (GBC).", icon: <DollarOutlined />, color: "#1677ff" },
+    { name: "Instant Equity (sell-side bridge loan)", desc: "A short-term loan against the borrower\u2019s current home that unlocks equity for down payment, closing costs, or reserves so they can buy the next home before selling the current one.", icon: <AppstoreOutlined />, color: "#52c41a" },
+    { name: "Cross Collateral", desc: "A short-term loan secured by both the new purchase and the departing home, increasing borrowing power (up to 105% of purchase price per current guidelines) and eliminating the need for a GBC in many scenarios.", icon: <TeamOutlined />, color: "#faad14" },
   ];
 
   const faqs = [
-    { key: "1", label: "What is the GBC value?", children: "The Guaranteed Backup Contract value is the estimated amount Flyhomes would pay for the departing property. It's calculated at 75% of the estimated departing value and is subject to underwriting." },
-    { key: "2", label: "How long does underwriting take?", children: "Standard underwriting takes 3–5 business days for an initial assessment. Complex scenarios may take 7–10 business days." },
-    { key: "3", label: "What are the origination fees?", children: "Origination fees vary by product: Instant Equity (2%), Cash Offer (1.5%), Cross Collateral (1.5%), IE+CO Combo (1.75%)." },
-    { key: "4", label: "Can a borrower use multiple products?", children: "Yes — the Instant Equity + Cash Offer Combo is designed for borrowers who want to utilize both simultaneously." },
-    { key: "5", label: "What states are Flyhomes products available in?", children: "Products are currently available in Utah, Washington, Oregon, Colorado, Texas, and California. Coverage is expanding — check with your AE for the latest." },
+    { key: "1", label: <span style={{ fontWeight: 600 }}>What is the GBC value?</span>, children: "The Guaranteed Backup Contract value is the estimated amount Flyhomes would pay for the departing property. It's calculated at 75% of the estimated departing value and is subject to underwriting." },
+    { key: "2", label: <span style={{ fontWeight: 600 }}>How long does underwriting take?</span>, children: "Standard underwriting takes 3\u20135 business days for an initial assessment. Complex scenarios may take 7\u201310 business days." },
+    { key: "3", label: <span style={{ fontWeight: 600 }}>What are the origination fees?</span>, children: "Origination fees vary by product: Instant Equity (2%), Cash Offer (1.5%), Cross Collateral (1.5%), IE+CO Combo (1.75%)." },
+    { key: "4", label: <span style={{ fontWeight: 600 }}>Can a borrower use multiple products?</span>, children: "Yes \u2014 the Instant Equity + Cash Offer Combo is designed for borrowers who want to utilize both simultaneously." },
+    { key: "5", label: <span style={{ fontWeight: 600 }}>What states are Flyhomes products available in?</span>, children: "Products are currently available in Utah, Washington, Oregon, Colorado, Texas, and California. Coverage is expanding \u2014 check with your AE for the latest." },
   ];
 
   // Marketing sub-tab: Flyers
@@ -4704,7 +4733,7 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
               children: (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
                   {products.map(p => {
-                    const hasGuidelines = p.name === "Buy Before You Sell";
+                    const hasGuidelines = p.name === "Buy Before You Sell Cash Offer (BBYS FCO)";
                     return (
                       <Card
                         key={p.name}
@@ -4735,7 +4764,12 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
             {
               key: "faqs",
               label: "FAQs",
-              children: <Collapse items={faqs} style={{ background: "#fff" }} />,
+              children: (
+                <>
+                  <style>{`.faq-collapse .ant-collapse-header { background: rgb(224,232,237) !important; } .faq-collapse .ant-collapse-item { margin-bottom: 6px !important; border-radius: 6px !important; overflow: hidden; }`}</style>
+                  <Collapse accordion items={faqs} className="faq-collapse" style={{ background: "transparent", border: "none" }} />
+                </>
+              ),
             },
             {
               key: "marketing",

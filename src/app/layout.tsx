@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
-import FigmaWidget from "@/app/components/FigmaWidget";
+import FrontChatWidget from "@/app/components/FrontChatWidget";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
 <body>
         <AntdRegistry>
           <ConfigProvider>{children}</ConfigProvider>
-          <FigmaWidget />
+          <FrontChatWidget />
         </AntdRegistry>
       </body>
     </html>
