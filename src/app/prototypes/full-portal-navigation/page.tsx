@@ -41,8 +41,10 @@ import type { TableProps } from "antd";
 import {
   AppstoreOutlined,
   ArrowLeftOutlined,
+  BarsOutlined,
   BellOutlined,
   LockOutlined,
+  QuestionCircleOutlined,
   RightOutlined,
   SafetyCertificateOutlined,
   ThunderboltOutlined,
@@ -258,6 +260,77 @@ const FLYER_PRODUCTS: FlyerProduct[] = [
       "Get a combined collateral approval",
       "Purchase the new property with maximum leverage",
       "Sell the departing property and settle the loan",
+    ],
+  },
+];
+
+const AGENT_FLYER_PRODUCTS: FlyerProduct[] = [
+  {
+    key: "agent-bbys", name: "Buy Before You Sell", tagline: "Win more listings. Close more deals.",
+    headline: "Help your clients buy first,\nsell without pressure.",
+    subheadline: "The listing edge your clients need",
+    bullets: [
+      { title: "Remove the sale contingency:", desc: "Your buyers can make clean offers — no contingency slowing them down." },
+      { title: "Win in competitive markets:", desc: "Non-contingent offers win significantly more often than contingent ones." },
+      { title: "List at the right time:", desc: "Sellers move out first, then list vacant \u2014 easier to stage and show." },
+      { title: "Two sides of the transaction:", desc: "Help your clients buy and sell, keeping both sides of the deal." },
+    ],
+    steps: [
+      "Refer your client to Flyhomes Mortgage",
+      "Client gets approved and buys the new home",
+      "You list the departing home vacant & staged",
+      "Client sells at full market value",
+    ],
+  },
+  {
+    key: "agent-cashOffer", name: "Cash Offer", tagline: "Your buyers win. Every time.",
+    headline: "Turn your buyers into\ncash buyers overnight.",
+    subheadline: "The strongest offer in any market",
+    bullets: [
+      { title: "Cash wins:", desc: "Cash offers are accepted 3\u20134\u00d7 more often in competitive markets." },
+      { title: "No financing contingency:", desc: "Sellers love the certainty \u2014 your offer stands out from the crowd." },
+      { title: "Close in as little as 10 days:", desc: "Fast close gives sellers flexibility and your clients an edge." },
+      { title: "Standard mortgage after:", desc: "Client refinances into a traditional loan after moving in." },
+    ],
+    steps: [
+      "Refer your buyer to Flyhomes Mortgage",
+      "Buyer gets pre-approved for cash purchase",
+      "Submit cash offer and win the deal",
+      "Client converts to standard mortgage post-close",
+    ],
+  },
+  {
+    key: "agent-instantEquity", name: "Instant Equity", tagline: "More down payment. Stronger offers.",
+    headline: "Unlock your clients\u2019 equity\nbefore the home is listed.",
+    subheadline: "Down payment solved before you list",
+    bullets: [
+      { title: "No sale contingency needed:", desc: "Clients access equity from their current home without selling first." },
+      { title: "Larger down payment:", desc: "More equity = stronger offer and better loan terms on the new home." },
+      { title: "List vacant:", desc: "Clients move out before listing \u2014 easier showings, faster sale." },
+      { title: "Up to 75% LTV:", desc: "Access up to 75% of the departing property\u2019s value." },
+    ],
+    steps: [
+      "Refer your client to Flyhomes Mortgage",
+      "Client receives equity advance for down payment",
+      "Buy the new home, then list the old one",
+      "Equity advance repaid from sale proceeds",
+    ],
+  },
+  {
+    key: "agent-crossCollateral", name: "Cross Collateral", tagline: "More buying power for your clients.",
+    headline: "Maximize buying power\nwith cross-collateral financing.",
+    subheadline: "Help clients buy more home",
+    bullets: [
+      { title: "Higher loan ceiling:", desc: "Both properties serve as collateral, dramatically increasing borrowing capacity." },
+      { title: "Up to 105% of purchase price:", desc: "Per current guidelines \u2014 far beyond standard financing limits." },
+      { title: "No GBC required:", desc: "Eliminates the need for a Guaranteed Backup Contract in many scenarios." },
+      { title: "One loan, two properties:", desc: "A seamless bridge as clients transition between homes." },
+    ],
+    steps: [
+      "Refer your client to Flyhomes Mortgage",
+      "Both properties are evaluated as combined collateral",
+      "Client purchases the new home with maximum leverage",
+      "Departing home sold and loan is settled",
     ],
   },
 ];
@@ -2443,40 +2516,53 @@ function BorrowerLandingPage({
                       <Text style={{ fontSize: 17, fontWeight: 700, color: "#78350f", display: "block", marginBottom: 10 }}>
                         Guaranteed Backup Contract
                       </Text>
+                      <Text style={{ fontSize: 14, color: "#92400e", lineHeight: 1.7, display: "block", marginBottom: 8 }}>
+                        At Fairway Mortgage we partner with Flyhomes to offer our clients more options. One of those options is the Flyhomes Guaranteed Backup Contract &mdash; an offer to purchase your departing residence. It removes the sale contingency from your purchase offer, making it even more competitive, and it allows Fairway Mortgage to exclude the mortgage from your debt-to-income (DTI) ratio in qualifying for the loan on your new home.
+                      </Text>
                       <Text style={{ fontSize: 14, color: "#92400e", lineHeight: 1.7, display: "block", marginBottom: 16 }}>
-                        Flyhomes will run a Salability Assessment on your home using industry-leading
-                        data and proprietary algorithms to determine a guaranteed contract value.
-                        You&apos;ll have up to 180 days to sell on the open market at full value.
-                        If your home doesn&apos;t sell, Flyhomes steps in — no sale contingency,
-                        no trailing debt, no surprises.
+                        To provide this offer, Flyhomes will run a Salability Assessment on your home using industry-leading data and proprietary algorithms to determine a contract offer amount. You&apos;ll have up to 180 days to sell on the open market at full value instead of selling to Flyhomes.
                       </Text>
-                      <Flex align="center" gap={6} style={{ marginBottom: 20 }}>
-                        <CheckCircleFilled style={{ fontSize: 13, color: "#52c41a" }} />
-                        <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
-                          No cost or obligation to request your offer.
-                        </Text>
+                      <Flex align="center" gap={12} style={{ marginTop: 8 }}>
+                        <Flex align="center" gap={6}>
+                          <CheckCircleFilled style={{ fontSize: 13, color: "#52c41a" }} />
+                          <Text style={{ fontSize: 12, color: "rgba(0,0,0,0.45)", whiteSpace: "nowrap" }}>
+                            No cost or obligation to request your offer.
+                          </Text>
+                        </Flex>
+                        <Button
+                          type="primary"
+                          size="large"
+                          style={{ background: "#b45309", borderColor: "#b45309", fontWeight: 600, height: 46, minWidth: 220 }}
+                          onClick={() => gbcSubmitted ? setShowGbcOffer(true) : setGbcFlowOpen(true)}
+                        >
+                          {gbcSubmitted ? "View My Offer" : "Request My Offer"}
+                        </Button>
                       </Flex>
-                      <Button
-                        type="primary"
-                        size="large"
-                        style={{ background: "#b45309", borderColor: "#b45309", fontWeight: 600, height: 46 }}
-                        onClick={() => gbcSubmitted ? setShowGbcOffer(true) : setGbcFlowOpen(true)}
-                      >
-                        {gbcSubmitted ? "View My Offer" : "Request My Offer"}
-                      </Button>
                     </div>
-                    <div style={{
-                      background: "#fef3c7", borderRadius: 10, padding: "14px 20px",
-                      border: "1px solid #fde68a", flexShrink: 0, minWidth: 180, textAlign: "center",
-                    }}>
-                      <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "#92400e", display: "block", marginBottom: 4 }}>
-                        Up to
-                      </Text>
-                      <Text style={{ fontSize: 28, fontWeight: 700, color: "#b45309", display: "block", lineHeight: 1.1 }}>
-                        180
-                      </Text>
-                      <Text style={{ fontSize: 13, color: "#92400e", display: "block" }}>days to sell</Text>
-                    </div>
+                    {/* Benefit boxes — right column */}
+                    <Flex vertical gap={10} style={{ flexShrink: 0 }}>
+                      {[
+                        { icon: <CheckCircleFilled style={{ fontSize: 18, color: "#b45309" }} />, label: "No home sale contingency" },
+                        { icon: <SafetyCertificateOutlined style={{ fontSize: 18, color: "#b45309" }} />, label: "Exclude trailing debt from DTI ratio" },
+                      ].map(b => (
+                        <div key={b.label} style={{
+                          background: "#fef3c7", borderRadius: 10, padding: "14px 20px",
+                          border: "1px solid #fde68a", minWidth: 200, textAlign: "center",
+                          display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                        }}>
+                          {b.icon}
+                          <Text style={{ fontSize: 13, fontWeight: 600, color: "#92400e", lineHeight: 1.3 }}>{b.label}</Text>
+                        </div>
+                      ))}
+                      <div style={{
+                        background: "#fef3c7", borderRadius: 10, padding: "14px 20px",
+                        border: "1px solid #fde68a", minWidth: 200, textAlign: "center",
+                      }}>
+                        <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "#92400e", display: "block", marginBottom: 4 }}>Up to</Text>
+                        <Text style={{ fontSize: 28, fontWeight: 700, color: "#b45309", display: "block", lineHeight: 1.1 }}>180</Text>
+                        <Text style={{ fontSize: 13, color: "#92400e", display: "block" }}>days to sell</Text>
+                      </div>
+                    </Flex>
                   </Flex>
                 </div>
               </Flex>
@@ -2596,8 +2682,11 @@ interface NewOppData {
   sqft: number | null;
   lot: number | null;
   yearBuilt: number | null;
+  // AVM range — set at lookup time, never changes when user edits homeValue
+  avmLow: number | null;
+  avmHigh: number | null;
   // editable financial fields
-  homeValue: number | null;      // Departing Value
+  homeValue: number | null;      // Departing Value (editable, defaults to AVM average)
   firstMortgage: number | null;  // Est. 1st Mortgage
   secondLien: number | null;     // Est. 2nd Lien
   // results / borrower context
@@ -2639,6 +2728,7 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
   const [data, setData] = useState<NewOppData>({
     purchasePrice: null, departingChoice: null, departingAddress: "",
     propertyLoading: false, beds: null, baths: null, sqft: null, lot: null, yearBuilt: null,
+    avmLow: null, avmHigh: null,
     homeValue: null, firstMortgage: null, secondLien: null,
     borrowerName: "", notes: "",
     ...initialData,
@@ -2650,6 +2740,8 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
   const [showBorrowerPreview, setShowBorrowerPreview] = useState(false);
   const [mockShareLink, setMockShareLink] = useState("");
   const [numbersModal, setNumbersModal] = useState<string | null>(null);
+  const [editingEstValue, setEditingEstValue] = useState(false);
+  const [avmAcknowledged, setAvmAcknowledged] = useState(false);
 
   const stepIndex = NEW_OPP_STEPS.findIndex(s => s.key === step);
   const hasDepProperty = data.departingChoice !== "no-property";
@@ -2667,6 +2759,8 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
         beds: match?.beds ?? null, baths: match?.baths ?? null,
         sqft: match?.sqft ?? null, lot: match?.lot ?? null, yearBuilt: match?.yearBuilt ?? null,
         homeValue: match?.value ?? null, firstMortgage: match?.mortgage ?? null, secondLien: 0,
+        avmLow: match?.value ? Math.round(match.value * 0.948) : null,
+        avmHigh: match?.value ? Math.round(match.value * 1.044) : null,
       }));
     }, 900);
     return () => clearTimeout(timer);
@@ -2907,25 +3001,33 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
     const addressParts = data.departingAddress ? data.departingAddress.split(/,(.+)/) : [];
     const streetLine = addressParts[0]?.trim() ?? "";
     const cityLine = addressParts.slice(1).join(",").trim();
-    const gbcValue = data.homeValue ? Math.round(data.homeValue * 0.75) : null;
-    const canProceed = !!(data.homeValue && data.firstMortgage !== null);
+    const canProceed = !!(data.homeValue && data.firstMortgage !== null && avmAcknowledged);
+
+    // AVM range is fixed from lookup — editing homeValue does not affect it
+    const avgValue = data.homeValue ?? 0;
+    const fmtV = (n: number) => "$" + n.toLocaleString();
 
     return (
       <div>
         <Card styles={{ body: { padding: 24 } }}>
           <StepHeader />
 
-          {/* Amber warning banner */}
+          {/* Prominent amber warning banner */}
           <div style={{
-            display: "flex", alignItems: "flex-start", gap: 10,
-            background: "rgba(255,238,196,0.5)", border: "1px solid #f3f4f6",
-            borderRadius: 8, padding: "10px 16px", marginBottom: 20,
+            display: "flex", alignItems: "flex-start", gap: 12,
+            background: "#fffbeb", border: "1px solid #f59e0b",
+            borderLeft: "4px solid #f59e0b",
+            borderRadius: 8, padding: "14px 18px", marginBottom: 20,
           }}>
-            <InfoCircleOutlined style={{ fontSize: 14, color: "#b45309", marginTop: 1, flexShrink: 0 }} />
-            <Text style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
-              Values are pre-filled estimates from property data. Review and edit as needed.{" "}
-              <span style={{ color: "#b45309", fontWeight: 500 }}>These are not an offer.</span>
-            </Text>
+            <InfoCircleOutlined style={{ fontSize: 18, color: "#b45309", marginTop: 1, flexShrink: 0 }} />
+            <div>
+              <Text style={{ fontSize: 13, fontWeight: 600, color: "#78350f", display: "block", marginBottom: 4 }}>
+                Important: Estimated Values Are Not Guaranteed
+              </Text>
+              <Text style={{ fontSize: 12, color: "#92400e", lineHeight: 1.7, display: "block" }}>
+                Estimated Property Value is an average of several property valuation model results and is intended to facilitate estimating potential maximum loan amounts. <strong>Actual loan amounts and property valuation are subject to change</strong> and are not confirmed until underwriting is complete.
+              </Text>
+            </div>
           </div>
 
           {/* Main card */}
@@ -2933,40 +3035,66 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
             loading={data.propertyLoading}
             style={{
               borderRadius: 14,
-              boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)",
-              border: "none",
+              boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -4px rgba(0,0,0,0.1)",
+              border: "1px solid #e5e7eb",
             }}
             styles={{ body: { padding: 0 } }}
           >
-            {/* Flyhomes Value header */}
+            {/* Header row — Estimated Value (left) + Range (right) */}
             <div style={{
-              padding: "22px 28px 18px",
-              borderBottom: "1px solid #f0f0f0",
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20,
+              padding: "20px 32px",
+              borderBottom: "1px solid #f3f4f6",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24,
             }}>
+              {/* Left: Estimated Property Value (editable) */}
               <div>
                 <Text style={{
-                  fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em",
-                  color: "rgba(0,0,0,0.45)", display: "block", marginBottom: 6,
+                  fontSize: 12, textTransform: "uppercase", letterSpacing: "0.06em",
+                  fontWeight: 500, color: "#6a7282", display: "block", marginBottom: 8,
                 }}>
-                  Flyhomes Value
+                  Estimated Property Value
                 </Text>
-                <Flex align="center" gap={8}>
-                  <DollarOutlined style={{ fontSize: 28, color: ACCENT }} />
-                  <Text style={{ fontSize: 40, fontWeight: 700, color: ACCENT, lineHeight: 1 }}>
-                    {gbcValue != null ? gbcValue.toLocaleString() : "—"}
-                  </Text>
-                </Flex>
+                {editingEstValue ? (
+                  <Flex align="center" gap={8}>
+                    <InputNumber
+                      autoFocus
+                      prefix={<DollarOutlined style={{ color: ACCENT }} />}
+                      formatter={numFormatter}
+                      parser={numParser}
+                      value={data.homeValue}
+                      onChange={v => setData(d => ({ ...d, homeValue: v as number | null }))}
+                      style={{ height: 52, fontSize: 28, fontWeight: 700, borderColor: ACCENT, borderWidth: 2, borderRadius: 8, minWidth: 200 }}
+                      size="large"
+                    />
+                    <Button type="primary" size="small" style={{ background: ACCENT, borderColor: ACCENT }} onClick={() => setEditingEstValue(false)}>
+                      Done
+                    </Button>
+                  </Flex>
+                ) : (
+                  <Flex align="center" gap={10}>
+                    <Text style={{ fontSize: 48, fontWeight: 700, color: ACCENT, lineHeight: 1, letterSpacing: "-0.5px" }}>
+                      {avgValue > 0 ? fmtV(avgValue) : "\u2014"}
+                    </Text>
+                    <Button
+                      type="text" size="small"
+                      icon={<EditOutlined style={{ fontSize: 14, color: "rgba(0,0,0,0.35)" }} />}
+                      onClick={() => setEditingEstValue(true)}
+                      style={{ marginTop: 4 }}
+                    />
+                  </Flex>
+                )}
               </div>
-              {/* Info pill */}
-              <div style={{
-                background: "rgba(224,232,237,0.3)",
-                borderRadius: 10, padding: "10px 14px",
-                display: "flex", alignItems: "flex-start", gap: 8, maxWidth: 360,
-              }}>
-                <InfoCircleOutlined style={{ fontSize: 14, color: "#364153", marginTop: 2, flexShrink: 0 }} />
-                <Text style={{ fontSize: 12, color: "#364153", lineHeight: 1.5 }}>
-                  Flyhomes uses industry leading data and proprietary algorithms to determine value. This is an estimate and not a formal offer.
+
+              {/* Right: Property Value Range */}
+              <div style={{ textAlign: "right" }}>
+                <Text style={{
+                  fontSize: 12, textTransform: "uppercase", letterSpacing: "0.06em",
+                  fontWeight: 500, color: "#6a7282", display: "block", marginBottom: 8,
+                }}>
+                  Property Value Range
+                </Text>
+                <Text style={{ fontSize: 32, fontWeight: 600, color: ACCENT, letterSpacing: "-0.3px", whiteSpace: "nowrap" }}>
+                  {data.avmLow && data.avmHigh ? `${fmtV(data.avmLow)} \u2013 ${fmtV(data.avmHigh)}` : "\u2014"}
                 </Text>
               </div>
             </div>
@@ -3093,27 +3221,51 @@ function NewOpportunityFlow({ onBack, profile, branding, initialStep, initialDat
               </div>
             </div>
 
-            {/* Footer nav */}
-            <Flex justify="space-between" align="center" style={{ borderTop: "1px solid #f0f0f0", padding: "16px 28px" }}>
-              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setStep("new-opp")} style={{ color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
-                Back
-              </Button>
-              <Button
-                disabled={!canProceed}
-                onClick={() => setStep("results")}
-                style={{
-                  background: canProceed ? ACCENT : undefined,
-                  borderColor: canProceed ? ACCENT : undefined,
-                  color: canProceed ? "#fff" : undefined,
-                  height: 48, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500,
-                  borderRadius: 10, boxShadow: canProceed ? "0px 4px 6px rgba(0,0,0,0.12)" : "none",
-                }}
-                icon={<ArrowRightOutlined />}
-                iconPosition="end"
-              >
-                Calculate Scenarios
-              </Button>
-            </Flex>
+            {/* Acknowledgment + footer nav */}
+            <div style={{ borderTop: "1px solid #f0f0f0" }}>
+              {/* Acknowledgment checkbox */}
+              <div style={{
+                background: avmAcknowledged ? "rgba(240,246,250,0.6)" : "#fffbeb",
+                borderBottom: "1px solid #f0f0f0",
+                padding: "14px 28px",
+                display: "flex", alignItems: "flex-start", gap: 10,
+                transition: "background 0.2s",
+              }}>
+                <Checkbox
+                  checked={avmAcknowledged}
+                  onChange={e => setAvmAcknowledged(e.target.checked)}
+                  style={{ marginTop: 2 }}
+                />
+                <Text
+                  style={{ fontSize: 13, color: avmAcknowledged ? "rgba(0,0,0,0.55)" : "#92400e", lineHeight: 1.6, cursor: "pointer" }}
+                  onClick={() => setAvmAcknowledged(v => !v)}
+                >
+                  I understand that the Estimated Property Value is an average of multiple valuation models and is not a guaranteed offer or appraisal. Actual values are subject to change pending underwriting.
+                </Text>
+              </div>
+              <Flex justify="space-between" align="center" style={{ padding: "16px 28px" }}>
+                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setStep("new-opp")} style={{ color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
+                  Back
+                </Button>
+                <Tooltip title={!avmAcknowledged ? "Please acknowledge the disclaimer above before continuing" : ""}>
+                  <Button
+                    disabled={!canProceed}
+                    onClick={() => setStep("results")}
+                    style={{
+                      background: canProceed ? ACCENT : undefined,
+                      borderColor: canProceed ? ACCENT : undefined,
+                      color: canProceed ? "#fff" : undefined,
+                      height: 48, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500,
+                      borderRadius: 10, boxShadow: canProceed ? "0px 4px 6px rgba(0,0,0,0.12)" : "none",
+                    }}
+                    icon={<ArrowRightOutlined />}
+                    iconPosition="end"
+                  >
+                    Calculate Scenarios
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </div>
           </Card>
         </Card>
       </div>
@@ -4610,6 +4762,7 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
   const [marketingTab, setMarketingTab] = useState("flyers");
   const [previewFlyer, setPreviewFlyer] = useState<FlyerProduct | null>(null);
   const [activeGuideline, setActiveGuideline] = useState<string | null>(null);
+  const [faqSearch, setFaqSearch] = useState("");
 
   if (activeGuideline === "bbys") {
     return <BBYSGuidelinesPage onBack={() => setActiveGuideline(null)} />;
@@ -4622,25 +4775,29 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
     { name: "Cross Collateral", desc: "A short-term loan secured by both the new purchase and the departing home, increasing borrowing power (up to 105% of purchase price per current guidelines) and eliminating the need for a GBC in many scenarios.", icon: <TeamOutlined />, color: "#faad14" },
   ];
 
-  const faqs = [
-    { key: "1", label: <span style={{ fontWeight: 600 }}>What is the GBC value?</span>, children: "The Guaranteed Backup Contract value is the estimated amount Flyhomes would pay for the departing property. It's calculated at 75% of the estimated departing value and is subject to underwriting." },
-    { key: "2", label: <span style={{ fontWeight: 600 }}>How long does underwriting take?</span>, children: "Standard underwriting takes 3\u20135 business days for an initial assessment. Complex scenarios may take 7\u201310 business days." },
-    { key: "3", label: <span style={{ fontWeight: 600 }}>What are the origination fees?</span>, children: "Origination fees vary by product: Instant Equity (2%), Cash Offer (1.5%), Cross Collateral (1.5%), IE+CO Combo (1.75%)." },
-    { key: "4", label: <span style={{ fontWeight: 600 }}>Can a borrower use multiple products?</span>, children: "Yes \u2014 the Instant Equity + Cash Offer Combo is designed for borrowers who want to utilize both simultaneously." },
-    { key: "5", label: <span style={{ fontWeight: 600 }}>What states are Flyhomes products available in?</span>, children: "Products are currently available in Utah, Washington, Oregon, Colorado, Texas, and California. Coverage is expanding \u2014 check with your AE for the latest." },
+  const FAQ_DATA = [
+    { key: "1", question: "What is the GBC value?", answer: "The Guaranteed Backup Contract value is the estimated amount Flyhomes would pay for the departing property. It\u2019s calculated at 75% of the estimated departing value and is subject to underwriting." },
+    { key: "2", question: "How long does underwriting take?", answer: "Standard underwriting takes 3\u20135 business days for an initial assessment. Complex scenarios may take 7\u201310 business days." },
+    { key: "3", question: "What are the origination fees?", answer: "Origination fees vary by product: Instant Equity (2%), Cash Offer (1.5%), Cross Collateral (1.5%), IE+CO Combo (1.75%)." },
+    { key: "4", question: "Can a borrower use multiple products?", answer: "Yes \u2014 the Instant Equity + Cash Offer Combo is designed for borrowers who want to utilize both simultaneously." },
+    { key: "5", question: "What states are Flyhomes products available in?", answer: "Products are currently available in Utah, Washington, Oregon, Colorado, Texas, and California. Coverage is expanding \u2014 check with your AE for the latest." },
   ];
+  const faqFiltered = faqSearch.trim()
+    ? FAQ_DATA.filter(f => {
+        const q = faqSearch.toLowerCase();
+        return f.question.toLowerCase().includes(q) || f.answer.toLowerCase().includes(q);
+      })
+    : FAQ_DATA;
+  const faqs = faqFiltered.map(f => ({
+    key: f.key,
+    label: <span style={{ fontWeight: 600 }}>{f.question}</span>,
+    children: f.answer,
+  }));
 
   // Marketing sub-tab: Flyers
-  const FlyersTab = (
-    <div>
-      <Flex align="center" justify="space-between" style={{ marginBottom: 16 }}>
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          Co-branded flyers for every Flyhomes product — your signature (photo, contact info, logo) is applied automatically.
-        </Text>
-        <Tag color="blue" style={{ fontSize: 11 }}>Signature pulls from Settings → User Profile &amp; My Branding</Tag>
-      </Flex>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-        {FLYER_PRODUCTS.map(flyer => (
+  const renderFlyerGrid = (flyerList: FlyerProduct[]) => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+      {flyerList.map(flyer => (
           <Card key={flyer.key} hoverable styles={{ body: { padding: 0, overflow: "hidden" } }} onClick={() => setPreviewFlyer(flyer)}>
             {/* Mini flyer preview */}
             <div style={{ background: SIDEBAR_BG, padding: "12px 12px 10px", position: "relative" }}>
@@ -4693,6 +4850,22 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
           </Card>
         ))}
       </div>
+  );
+
+  const FlyersTab = (
+    <div>
+      <Flex align="center" justify="space-between" style={{ marginBottom: 20 }}>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Co-branded flyers — your signature (photo, contact info, logo) is applied automatically.
+        </Text>
+        <Tag color="blue" style={{ fontSize: 11 }}>Signature pulls from Settings → User Profile &amp; My Branding</Tag>
+      </Flex>
+      <Text strong style={{ display: "block", fontSize: 14, marginBottom: 12 }}>Borrower Facing</Text>
+      {renderFlyerGrid(FLYER_PRODUCTS)}
+      <div style={{ margin: "28px 0 16px", borderTop: "1px solid #f0f0f0", paddingTop: 24 }}>
+        <Text strong style={{ display: "block", fontSize: 14, marginBottom: 12 }}>Agent Facing</Text>
+      </div>
+      {renderFlyerGrid(AGENT_FLYER_PRODUCTS)}
     </div>
   );
 
@@ -4767,7 +4940,18 @@ function ResourcesView({ profile, branding, initialTab }: { profile: UserProfile
               children: (
                 <>
                   <style>{`.faq-collapse .ant-collapse-header { background: rgb(224,232,237) !important; } .faq-collapse .ant-collapse-item { margin-bottom: 6px !important; border-radius: 6px !important; overflow: hidden; }`}</style>
-                  <Collapse accordion items={faqs} className="faq-collapse" style={{ background: "transparent", border: "none" }} />
+                  <Input
+                    prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+                    placeholder="Search questions and answers..."
+                    value={faqSearch}
+                    onChange={e => setFaqSearch(e.target.value)}
+                    allowClear
+                    style={{ marginBottom: 16, maxWidth: 480 }}
+                  />
+                  {faqs.length > 0
+                    ? <Collapse accordion items={faqs} className="faq-collapse" style={{ background: "transparent", border: "none" }} />
+                    : <Text type="secondary" style={{ display: "block", padding: "24px 0" }}>No questions match your search.</Text>
+                  }
                 </>
               ),
             },
@@ -5333,32 +5517,46 @@ function MyBrandingForm({ branding, onSave }: { branding: BrandingData; onSave: 
 }
 
 function TeamManagementView() {
-  const members = [
-    { key: "1", name: "Brian Smith", role: "Loan Officer", email: "brian@fairwaymc.com", status: "Active" },
-    { key: "2", name: "Sarah Jenkins", role: "Processor", email: "sarah@fairwaymc.com", status: "Active" },
-  ];
+  type TeamMember = { key: string; name: string; email: string; phone: string; role: string; permissions: string[]; isOwner?: boolean };
+  const [members, setMembers] = useState<TeamMember[]>([
+    { key: "1", name: "Brian Smith",    email: "brian@fairwaymc.com",  phone: "987-654-3210", role: "Owner",   permissions: ["Create", "Update", "Delete"], isOwner: true },
+    { key: "2", name: "Emily Chen",     email: "emily@fairwaymc.com",  phone: "987-654-3210", role: "Support", permissions: ["Create", "Update", "Delete"] },
+    { key: "3", name: "Meetha Sharma",  email: "meetha@fairwaymc.com", phone: "987-654-3210", role: "Support", permissions: ["Create", "Update"] },
+  ]);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newRole, setNewRole] = useState("Support");
+  const [newPerms, setNewPerms] = useState<string[]>(["Create", "Update"]);
 
-  const cols: TableProps<typeof members[0]>["columns"] = [
+  const cols: TableProps<TeamMember>["columns"] = [
+    { title: "Name",  dataIndex: "name",  key: "name",  width: 160, render: (v: string) => <Text strong>{v}</Text> },
+    { title: "Email", dataIndex: "email", key: "email", width: 220 },
+    { title: "Phone", dataIndex: "phone", key: "phone", width: 140 },
+    { title: "Role",  dataIndex: "role",  key: "role",  width: 100 },
     {
-      title: "Member", dataIndex: "name", key: "name",
-      render: (v: string, row: typeof members[0]) => (
-        <Flex align="center" gap={10}>
-          <Avatar style={{ background: ACCENT, flexShrink: 0 }}>{v[0]}</Avatar>
-          <div>
-            <Text strong style={{ display: "block", fontSize: 13 }}>{v}</Text>
-            <Text type="secondary" style={{ fontSize: 11 }}>{row.role}</Text>
-          </div>
-        </Flex>
+      title: "Permissions", dataIndex: "permissions", key: "permissions",
+      render: (perms: string[]) => (
+        <Space size={4}>
+          {["Create","Update","Delete"].map(p => (
+            <Tag key={p} style={{
+              background: perms.includes(p) ? "#f0f0f0" : "transparent",
+              color: perms.includes(p) ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.25)",
+              border: "1px solid #d9d9d9",
+              fontSize: 12, margin: 0,
+            }}>{p}</Tag>
+          ))}
+        </Space>
       ),
     },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Status", dataIndex: "status", key: "status", width: 100, render: (v: string) => <Tag color="green">{v}</Tag> },
     {
-      title: "", key: "action", width: 140,
-      render: () => (
-        <Space>
-          <Button size="small">Edit</Button>
-          <Button size="small" danger>Remove</Button>
+      title: "Action", key: "action", width: 80,
+      render: (_: unknown, row: TeamMember) => row.isOwner ? null : (
+        <Space size={8}>
+          <Button type="text" size="small" icon={<EditOutlined style={{ color: ACCENT }} />} />
+          <Button type="text" size="small" icon={<DeleteOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+            onClick={() => setMembers(ms => ms.filter(m => m.key !== row.key))} />
         </Space>
       ),
     },
@@ -5366,13 +5564,34 @@ function TeamManagementView() {
 
   return (
     <div>
-      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-        <Text type="secondary" style={{ fontSize: 13 }}>Manage who has access to your portal account.</Text>
-        <Button type="primary" icon={<PlusOutlined />} style={{ background: ACCENT, borderColor: ACCENT }}>
-          Invite Member
+      <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+        <Title level={4} style={{ margin: 0 }}>Team Management</Title>
+        <Button type="primary" style={{ background: SIDEBAR_BG, borderColor: SIDEBAR_BG, borderRadius: 6 }} onClick={() => setAddOpen(true)}>
+          Add a team member
         </Button>
       </Flex>
       <Table columns={cols} dataSource={members} pagination={false} size="middle" />
+
+      <Modal title="Add a team member" open={addOpen} onCancel={() => setAddOpen(false)}
+        onOk={() => {
+          if (!newName || !newEmail) return;
+          setMembers(ms => [...ms, { key: String(Date.now()), name: newName, email: newEmail, phone: newPhone, role: newRole, permissions: newPerms }]);
+          setAddOpen(false); setNewName(""); setNewEmail(""); setNewPhone(""); setNewRole("Support"); setNewPerms(["Create","Update"]);
+        }}
+        okText="Add member" okButtonProps={{ style: { background: SIDEBAR_BG, borderColor: SIDEBAR_BG } }}
+      >
+        <Flex vertical gap={12} style={{ marginTop: 16 }}>
+          <Input placeholder="Full name" value={newName} onChange={e => setNewName(e.target.value)} />
+          <Input placeholder="Email" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+          <Input placeholder="Phone" value={newPhone} onChange={e => setNewPhone(e.target.value)} />
+          <Select value={newRole} onChange={setNewRole} options={[{ value: "Support", label: "Support" }, { value: "Admin", label: "Admin" }]} />
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 6 }}>Permissions</Text>
+            <Checkbox.Group value={newPerms} onChange={v => setNewPerms(v as string[])}
+              options={["Create","Update","Delete"]} />
+          </div>
+        </Flex>
+      </Modal>
     </div>
   );
 }
@@ -5384,7 +5603,7 @@ function SettingsView({ profile, onSaveProfile, branding, onSaveBranding }: {
   profile: UserProfile; onSaveProfile: (p: UserProfile) => void;
   branding: BrandingData; onSaveBranding: (b: BrandingData) => void;
 }) {
-  const [tab, setTab] = useState("notification-prefs");
+  const [tab, setTab] = useState("user-profile");
 
   return (
     <Card styles={{ body: { padding: "0 24px 24px" } }}>
@@ -5392,10 +5611,10 @@ function SettingsView({ profile, onSaveProfile, branding, onSaveBranding }: {
         activeKey={tab}
         onChange={setTab}
         items={[
-          { key: "notification-prefs", label: "Notification Preferences", children: <NotificationPrefsForm /> },
           { key: "user-profile", label: "User Profile", children: <UserProfileForm profile={profile} onSave={onSaveProfile} /> },
-          { key: "my-branding", label: "My Branding", children: <MyBrandingForm branding={branding} onSave={onSaveBranding} /> },
+          { key: "my-branding", label: "Branding", children: <MyBrandingForm branding={branding} onSave={onSaveBranding} /> },
           { key: "team", label: "Team Management", children: <TeamManagementView /> },
+          { key: "notification-prefs", label: "Notification Preferences", children: <NotificationPrefsForm /> },
         ]}
       />
     </Card>
@@ -5745,12 +5964,12 @@ function NotificationsDrawer({ open, onClose }: { open: boolean; onClose: () => 
 // Root
 // ─────────────────────────────────────────────────────────────
 const SECTION_LABELS: Record<Section, string> = {
-  home: "Home", pipeline: "Pipeline", contacts: "Contacts",
+  home: "Dashboard", pipeline: "Deals", contacts: "Contacts",
   resources: "Resources", settings: "Settings",
 };
 
 export default function FullPortalNavigationPage() {
-  const [section, setSection] = useState<Section>("home");
+  const [section, setSection] = useState<Section>("pipeline");
   const [resourceInitTab, setResourceInitTab] = useState<string | undefined>(undefined);
   const [notifOpen, setNotifOpen] = useState(false);
   const [medhaOpen, setMedhaOpen] = useState(false);
@@ -5772,77 +5991,101 @@ export default function FullPortalNavigationPage() {
   return (
     <ConfigProvider theme={portalTheme}>
       <Layout style={{ minHeight: "100vh" }}>
-        {/* ── Sidebar ── */}
-        <Sider width={240} style={{ backgroundColor: SIDEBAR_BG, position: "relative" }}>
-          <Flex align="center" gap={8} style={{ height: 64, padding: "0 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <HomeOutlined style={{ fontSize: 20, color: "rgba(255,255,255,0.65)" }} />
-            <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 16, fontWeight: 600 }}>flyhomes</Text>
-          </Flex>
 
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[section]}
-            style={{ backgroundColor: SIDEBAR_BG, border: "none", marginTop: 8 }}
-            items={[
-              { key: "home", icon: <HomeOutlined />, label: "Home" },
-              { key: "pipeline", icon: <AppstoreOutlined />, label: "Pipeline" },
-              { key: "contacts", icon: <TeamOutlined />, label: "Contacts" },
-              { key: "resources", icon: <BookOutlined />, label: "Resources" },
-              { key: "settings", icon: <SettingOutlined />, label: "Settings" },
-            ]}
-            onClick={({ key }) => setSection(key as Section)}
-          />
-
-          <div style={{ position: "absolute", bottom: 0, width: "100%", padding: "17px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <Button type="text" icon={<LeftOutlined />} style={{ color: "rgba(255,255,255,0.65)", width: "100%", textAlign: "left", paddingLeft: 12 }}>
-              Collapse
-            </Button>
-          </div>
-        </Sider>
-
-        {/* ── Main ── */}
-        <Layout>
-          <Header style={{ backgroundColor: SIDEBAR_BG, padding: "0 24px", borderBottom: "1px solid rgba(255,255,255,0.06)", height: 64 }}>
-            <Flex justify="space-between" align="center" style={{ height: "100%" }}>
-              <Text style={{ color: "rgba(255,255,255,0.88)", fontSize: 15, fontWeight: 600 }}>
-                {SECTION_LABELS[section]}
-              </Text>
-              <Flex align="center" gap={20}>
-                {/* Medha */}
-                <Button
-                  onClick={() => openMedha()}
-                  style={{
-                    background: "rgba(124,58,237,0.15)",
-                    borderColor: "rgba(124,58,237,0.35)",
-                    color: "#c4b5fd",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    height: 34,
-                  }}
-                  icon={<CommentOutlined />}
-                >
-                  Ask Medha
-                </Button>
-
-                <Badge count={unread} size="small" offset={[-2, 2]}>
-                  <Button
-                    type="text"
-                    icon={<BellOutlined style={{ fontSize: 17, color: "rgba(255,255,255,0.65)" }} />}
-                    onClick={() => setNotifOpen(true)}
-                  />
-                </Badge>
-                <Flex align="center" gap={8} style={{ cursor: "pointer" }}>
-                  <Avatar size={32} style={{ background: ACCENT, flexShrink: 0 }}>B</Avatar>
-                  <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 14 }}>Brian Smith</Text>
-                  <CaretDownOutlined style={{ color: "rgba(255,255,255,0.45)", fontSize: 10 }} />
-                </Flex>
+        {/* ── Full-width top header ── */}
+        <Header style={{ backgroundColor: SIDEBAR_BG, padding: "0 24px 0 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", height: 56, lineHeight: "56px" }}>
+          <Flex justify="space-between" align="center" style={{ height: "100%" }}>
+            {/* Logo */}
+            <Text
+              onClick={() => setSection("home")}
+              style={{ color: "#fff", fontSize: 18, fontWeight: 700, fontStyle: "italic", letterSpacing: -0.5, cursor: "pointer", userSelect: "none" }}
+            >
+              flyhomes
+            </Text>
+            <Flex align="center" gap={16}>
+              {/* Guide */}
+              <Button
+                type="text"
+                icon={<QuestionCircleOutlined style={{ color: "rgba(255,255,255,0.65)" }} />}
+                style={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}
+                onClick={() => navigateTo("resources")}
+              >
+                Guide
+              </Button>
+              {/* Ask Medha */}
+              <Button
+                onClick={() => openMedha()}
+                style={{ background: "rgba(124,58,237,0.15)", borderColor: "rgba(124,58,237,0.35)", color: "#c4b5fd", fontWeight: 600, fontSize: 13, height: 32 }}
+                icon={<CommentOutlined />}
+              >
+                Ask Medha
+              </Button>
+              {/* Notifications */}
+              <Badge count={unread} size="small" offset={[-2, 2]}>
+                <Button type="text" icon={<BellOutlined style={{ fontSize: 16, color: "rgba(255,255,255,0.65)" }} />} onClick={() => setNotifOpen(true)} />
+              </Badge>
+              {/* User */}
+              <Flex align="center" gap={8} style={{ cursor: "pointer" }} onClick={() => setSection("settings")}>
+                <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13 }}>Welcome, {profile.firstName}</Text>
+                <CaretDownOutlined style={{ color: "rgba(255,255,255,0.45)", fontSize: 10 }} />
               </Flex>
             </Flex>
-          </Header>
+          </Flex>
+        </Header>
 
+        {/* ── Body row: sidebar + content ── */}
+        <Layout>
+          {/* ── White sidebar ── */}
+          <Sider width={200} style={{ backgroundColor: "#fff", borderRight: "1px solid #f0f0f0", position: "relative" }}>
+            <Menu
+              theme="light"
+              mode="inline"
+              selectedKeys={[section]}
+              style={{ border: "none", marginTop: 8, fontSize: 14 }}
+              items={[
+                { key: "pipeline",  icon: <BarsOutlined />,    label: "Deals" },
+                { key: "contacts",  icon: <TeamOutlined />,    label: "Contacts" },
+                { key: "resources", icon: <BookOutlined />,    label: "Resources" },
+                { key: "settings",  icon: <SettingOutlined />, label: "Settings" },
+              ]}
+              onClick={({ key }) => setSection(key as Section)}
+            />
+
+            {/* Bottom links */}
+            <div style={{ position: "absolute", bottom: 0, width: "100%", borderTop: "1px solid #f0f0f0", padding: "12px 0 8px" }}>
+              <div
+                onClick={() => setSection("pipeline")}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", cursor: "pointer", color: "rgba(0,0,0,0.65)", fontSize: 13 }}
+                onMouseEnter={e => (e.currentTarget.style.color = ACCENT)}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,0.65)")}
+              >
+                <PlusOutlined style={{ fontSize: 12 }} />
+                <span>Create a new deal</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", cursor: "pointer", color: "rgba(0,0,0,0.65)", fontSize: 13 }}
+                onMouseEnter={e => (e.currentTarget.style.color = ACCENT)}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,0.65)")}
+              >
+                <LinkOutlined style={{ fontSize: 12 }} />
+                <span>Access TPO Portal</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", color: "rgba(0,0,0,0.45)", fontSize: 13 }}>
+                <UserOutlined style={{ fontSize: 12 }} />
+                <span>AE: Nicholas Anderson</span>
+              </div>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", cursor: "pointer", color: "rgba(0,0,0,0.45)", fontSize: 13, borderTop: "1px solid #f0f0f0", marginTop: 4 }}
+              >
+                <LeftOutlined style={{ fontSize: 11 }} />
+                <LeftOutlined style={{ fontSize: 11, marginLeft: -6 }} />
+                <span>Collapse</span>
+              </div>
+            </div>
+          </Sider>
+
+          {/* ── Content ── */}
           <Content style={{ backgroundColor: CONTENT_BG, padding: 24 }}>
-            {section === "home" && <HomeView onNavigate={navigateTo} onOpenMedha={openMedha} />}
+            {section === "home"     && <HomeView onNavigate={navigateTo} onOpenMedha={openMedha} />}
             {section === "pipeline" && <PipelineView profile={profile} branding={branding} />}
             {section === "contacts" && <ContactsView />}
             {section === "resources" && <ResourcesView profile={profile} branding={branding} initialTab={resourceInitTab} />}
